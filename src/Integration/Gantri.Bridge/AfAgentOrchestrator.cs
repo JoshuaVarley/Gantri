@@ -3,6 +3,8 @@ using Gantri.Abstractions.Configuration;
 using Gantri.Abstractions.Hooks;
 using Gantri.Telemetry;
 using Microsoft.Agents.AI;
+using Microsoft.Agents.AI.Workflows;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 
 namespace Gantri.Bridge;
@@ -87,31 +89,50 @@ public sealed class AfAgentOrchestrator : IAgentOrchestrator
             participants.Count, string.Join(", ", participants));
 
         // Build AF agents for all participants
-        var agents = new List<(string Name, AIAgent Agent)>();
+        var afAgents = new List<AIAgent>();
         foreach (var participantName in participants)
         {
             var definition = _registry.TryGet(participantName)
                 ?? throw new InvalidOperationException(
                     $"Agent '{participantName}' not found. Available: {string.Join(", ", _registry.Names)}");
 
-            var afAgent = await _agentFactory.CreateAgentAsync(definition, cancellationToken);
-            agents.Add((participantName, afAgent));
+            afAgents.Add(await _agentFactory.CreateAgentAsync(definition, cancellationToken));
         }
 
-        // Run sequential pipeline: each agent's output feeds the next agent's input
-        var currentMessage = input;
-        foreach (var (name, agent) in agents)
+        // Build and execute AF group chat workflow
+        var workflow = AgentWorkflowBuilder
+            .CreateGroupChatBuilderWith(agentList =>
+                new RoundRobinGroupChatManager(agentList)
+                {
+                    MaximumIterationCount = maxIterations
+                })
+            .AddParticipants(afAgents.ToArray())
+            .Build();
+
+        var inputMessage = new ChatMessage(ChatRole.User, input);
+        await using var run = await InProcessExecution.RunAsync(workflow, inputMessage);
+
+        // Extract final output from workflow events
+        var currentMessage = string.Empty;
+        foreach (var evt in run.NewEvents)
         {
-            _logger.LogInformation("Running agent '{Agent}' in group chat", name);
-
-            var session = await agent.CreateSessionAsync(cancellationToken: cancellationToken);
-            var response = await agent.RunAsync(currentMessage, session, cancellationToken: cancellationToken);
-            var responseText = response.Text ?? string.Empty;
-
-            _logger.LogInformation("Agent '{Agent}' responded ({Length} chars)", name, responseText.Length);
-
-            currentMessage = responseText;
-            GantriMeters.AiCompletionsTotal.Add(1);
+            if (evt is WorkflowOutputEvent outputEvt)
+            {
+                if (outputEvt.Is<List<ChatMessage>>(out var messages))
+                {
+                    currentMessage = messages
+                        .LastOrDefault(m => m.Role == ChatRole.Assistant)?.Text
+                        ?? currentMessage;
+                }
+                else if (outputEvt.Is<AgentResponse>(out var response))
+                {
+                    currentMessage = response.Text ?? currentMessage;
+                }
+            }
+            else if (evt is AgentResponseEvent responseEvt)
+            {
+                currentMessage = responseEvt.Response.Text ?? currentMessage;
+            }
         }
 
         // Fire group-chat end hook

@@ -14,6 +14,7 @@ public sealed class PluginActionFunction : AIFunction
     private readonly string _pluginName;
     private readonly string _actionName;
     private readonly IPluginRouter _pluginRouter;
+    private readonly IPluginServices? _pluginServices;
     private readonly IToolApprovalHandler? _approvalHandler;
     private readonly string _name;
     private readonly string _description;
@@ -27,6 +28,7 @@ public sealed class PluginActionFunction : AIFunction
         string? description,
         JsonElement? parametersSchema,
         IPluginRouter pluginRouter,
+        IPluginServices? pluginServices = null,
         string? workingDirectory = null,
         IToolApprovalHandler? approvalHandler = null,
         IReadOnlyDictionary<string, object?>? additionalParameters = null)
@@ -34,6 +36,7 @@ public sealed class PluginActionFunction : AIFunction
         _pluginName = pluginName;
         _actionName = actionName;
         _pluginRouter = pluginRouter;
+        _pluginServices = pluginServices;
         _approvalHandler = approvalHandler;
         _name = $"{pluginName}.{actionName}";
         _description = description ?? string.Empty;
@@ -74,7 +77,8 @@ public sealed class PluginActionFunction : AIFunction
         {
             ActionName = _actionName,
             Parameters = parameters,
-            WorkingDirectory = _workingDirectory
+            WorkingDirectory = _workingDirectory,
+            Services = _pluginServices
         }, cancellationToken);
 
         return result.Success

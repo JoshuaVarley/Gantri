@@ -36,6 +36,7 @@
     <ProjectReference Include="..\..\Domain\Gantri.Workflows\Gantri.Workflows.csproj" />
     <ProjectReference Include="..\..\Domain\Gantri.Scheduling\Gantri.Scheduling.csproj" />
     <ProjectReference Include="..\..\Integration\Gantri.Bridge\Gantri.Bridge.csproj" />
+    <ProjectReference Include="..\..\Core\Gantri.Dataverse\Gantri.Dataverse.csproj" />
   </ItemGroup>
 
   <ItemGroup>

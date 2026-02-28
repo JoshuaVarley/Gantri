@@ -4,6 +4,7 @@ using Gantri.Agents;
 using Gantri.AI;
 using Gantri.Bridge;
 using Gantri.Configuration;
+using Gantri.Dataverse;
 using Gantri.Hooks;
 using Gantri.Mcp;
 using Gantri.Plugins;
@@ -88,6 +89,9 @@ builder.Services.Configure<WorkingDirectoryOptions>(o =>
 
 // Shared host registrations: definition registries, scheduling jobs
 builder.Services.AddGantriFromConfig(config);
+
+// Dataverse connection management (after config is loaded)
+builder.Services.AddGantriDataverse(config?.Dataverse);
 
 // Chat client factory for GantriAgentFactory
 if (config?.Ai.Providers is { Count: > 0 })

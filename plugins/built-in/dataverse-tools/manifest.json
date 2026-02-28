@@ -1,0 +1,62 @@
+{
+    "name": "dataverse-tools",
+    "version": "1.0.0",
+    "type": "native",
+    "description": "Dataverse tools using the official Microsoft Dataverse SDK",
+    "entry": "Gantri.Dataverse.Tools.dll",
+    "capabilities": {
+        "required": ["http-request"],
+        "optional": ["config-read"]
+    },
+    "exports": {
+        "actions": [
+            {
+                "name": "who-am-i",
+                "description": "Get current user and organization info from the active Dataverse environment",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "profile": {
+                            "type": "string",
+                            "description": "Optional profile name (uses active profile if omitted)"
+                        }
+                    },
+                    "required": []
+                }
+            },
+            {
+                "name": "list-entities",
+                "description": "List all entities/tables in the Dataverse environment",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "filter": {
+                            "type": "string",
+                            "description": "Optional filter by logical name prefix"
+                        },
+                        "custom_only": {
+                            "type": "boolean",
+                            "description": "Only return custom entities (default: false)"
+                        }
+                    },
+                    "required": []
+                }
+            },
+            {
+                "name": "query-records",
+                "description": "Query records using FetchXML",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "fetch_xml": {
+                            "type": "string",
+                            "description": "FetchXML query string"
+                        }
+                    },
+                    "required": ["fetch_xml"]
+                }
+            }
+        ],
+        "hooks": []
+    }
+}

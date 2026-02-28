@@ -39,6 +39,7 @@ public static class BridgeServiceExtensions
             var clientFactory = sp.GetService<Func<string, AiModelOptions, IChatClient>>();
             var approvalHandler = sp.GetService<IToolApprovalHandler>();
             var mcpPermissionManager = sp.GetService<McpPermissionManager>();
+            var pluginServices = sp.GetService<IPluginServices>();
 
             return new GantriAgentFactory(
                 registry,
@@ -50,7 +51,8 @@ public static class BridgeServiceExtensions
                 workingDirectoryOptions,
                 clientFactory,
                 approvalHandler,
-                mcpPermissionManager
+                mcpPermissionManager,
+                pluginServices
             );
         });
 

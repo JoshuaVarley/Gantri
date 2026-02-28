@@ -2,7 +2,7 @@ ai:
   default_model: default
   providers:
     azure-openai:
-      endpoint: https://foundry-example.cognitiveservices.azure.com/
+      endpoint: https://foundry-classic.cognitiveservices.azure.com/
       api_key: ${AZURE_OPENAI_API_KEY}
       models:
         # Centralized alias — update to change all general-purpose agents at once
@@ -30,7 +30,7 @@ ai:
           max_tokens: 16384
           default_temperature: 0.2
     azure-ai-foundry:
-      base_url: https://foundry-example.services.ai.azure.com/openai/v1/
+      base_url: https://foundry-classic.services.ai.azure.com/openai/v1/
       api_key: ${AZURE_OPENAI_API_KEY}
       models:
         deepseek-v3.2:

@@ -1,0 +1,22 @@
+dataverse:
+  active_profile: dev
+  profiles:
+    dev:
+      name: dev
+      url: https://org-dev.crm.dynamics.com
+      auth_type: device_code
+      tenant_id: ${AZURE_TENANT_ID}
+      description: "Development environment"
+    prod:
+      name: prod
+      url: https://org-prod.crm.dynamics.com
+      auth_type: client_secret
+      tenant_id: ${AZURE_TENANT_ID}
+      client_id: ${DATAVERSE_CLIENT_ID}
+      credential: ${DATAVERSE_CLIENT_SECRET}
+      description: "Production CRM"
+    customer-sandbox:
+      name: customer-sandbox
+      url: https://customer-sandbox.crm.dynamics.com
+      auth_type: azure_cli
+      description: "Customer sandbox (uses az login)"

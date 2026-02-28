@@ -19,13 +19,16 @@ Built on .NET 10, Microsoft Agent Framework, Microsoft.Extensions.AI, Azure Open
 ## Features
 
 - **Agent Framework integration** — Agents run on the Microsoft Agent Framework (`AIAgent`, `AgentSession`), with a bridge layer that adapts Gantri's plugin/hook/MCP systems to AF's APIs. `IAgentProvider` exposes raw `AIAgent` instances for protocol-aware hosts (AG-UI, A2A).
-- **Multi-agent orchestration** — `AfAgentOrchestrator.RunGroupChatAsync` runs multiple agents sequentially, passing each agent's output as the next agent's input. Supports configurable iteration counts.
+- **Multi-agent orchestration** — `AfAgentOrchestrator.RunGroupChatAsync` uses AF's native `AgentWorkflowBuilder` group chat with `RoundRobinGroupChatManager` for shared conversation history, iterative multi-round refinement, and configurable iteration counts via `InProcessExecution`.
 - **AG-UI and A2A protocol hosting** — Web host exposes agents as AG-UI SSE endpoints for web frontends (CopilotKit, custom UIs) and A2A endpoints for agent-to-agent discovery and communication via AgentCards.
 - **Dual plugin system** — Native .NET plugins loaded via isolated `AssemblyLoadContext`, plus WASM sandboxed plugins via Wasmtime for language-agnostic extensions.
 - **Workflow engine** — Define multi-step workflows in YAML with agent, plugin, condition, approval, and parallel step types. Simple sequential agent workflows route through AF; complex workflows use the legacy engine.
 - **Job scheduling** — Cron-based scheduling built on TickerQ that triggers workflows, agents, or plugins on a schedule, with a dedicated Worker host for background execution.
 - **Hook pipeline** — Cross-cutting middleware with pattern-matched event hooks (`Before`, `After`, `OnError`, `Around`) for every subsystem.
 - **MCP integration** — Connect to external Model Context Protocol servers to expose tools to agents. MCP servers auto-connect on first use with a 30-second timeout, with per-agent server permissions.
+- **Plugin services** — Framework-level `IPluginServices` provides plugins with access to logging, configuration, AI chat clients, and shared external services via `GetService<T>()`. Backed by the host's DI container.
+- **Shared connection providers** — Generic `IConnectionProvider` / `IServiceConnection` abstractions for managing pooled connections to external services. Plugins resolve typed providers (e.g., `IDataverseConnectionProvider`) through `context.Services.GetService<T>()`.
+- **Dataverse integration** — Built-in connection provider for Microsoft Dataverse (D365/Power Platform) with support for multiple named profiles, connection pooling, and five authentication types (client secret, device code, interactive browser, Azure CLI, certificate). CLI commands for profile management (`gantri plugin dataverse profiles/switch/test/current`).
 - **YAML configuration** — All settings, agent definitions, plugin directories, and hook bindings configured from YAML files with environment variable substitution.
 - **OpenTelemetry instrumentation** — Built-in `ActivitySource` and `Meter` instances for traces, metrics, and logs across all subsystems.
 - **Interactive console** — Launch `gantri` with no arguments to enter a persistent REPL with `/commands` for agents, workflows, group chat, and more. Streaming agent responses render tokens in real time. Human-in-the-loop tool approval prompts before any plugin/MCP tool executes. Workflow approval steps prompt inline instead of pausing to disk.
@@ -120,7 +123,7 @@ Gantri ships with several agent definitions in `config/agents/`:
 
 ## Built-in Plugins
 
-Gantri ships with 11 built-in plugins in `plugins/built-in/`:
+Gantri ships with 12 built-in plugins in `plugins/built-in/`:
 
 | Plugin | Actions | Capabilities | Description |
 |--------|---------|-------------|-------------|
@@ -134,7 +137,48 @@ Gantri ships with 11 built-in plugins in `plugins/built-in/`:
 | `git-operations` | `status`, `diff`, `log`, `commit` | ProcessExec, FsRead | Git version control operations |
 | `project-detect` | `analyze` | FsRead | Detect project language/framework/tooling |
 | `web-fetch` | `fetch` | HttpRequest | Fetch web URLs with HTML stripping |
+| `dataverse-tools` | `who-am-i`, `list-entities`, `query-records` | HttpRequest | Dataverse environment tools via shared connection provider |
 | `hello-world` | `hello` | — | Test/example plugin |
+
+## Dataverse Connection Management
+
+Configure Dataverse environments in `config/dataverse.yaml`:
+
+```yaml
+dataverse:
+  active_profile: dev
+  profiles:
+    dev:
+      name: dev
+      url: https://org-dev.crm.dynamics.com
+      auth_type: device_code
+      tenant_id: ${AZURE_TENANT_ID}
+    prod:
+      name: prod
+      url: https://org-prod.crm.dynamics.com
+      auth_type: client_secret
+      tenant_id: ${AZURE_TENANT_ID}
+      client_id: ${DATAVERSE_CLIENT_ID}
+      credential: ${DATAVERSE_CLIENT_SECRET}
+```
+
+Supported auth types: `client_secret`, `device_code`, `interactive`, `azure_cli`, `certificate`.
+
+CLI commands:
+
+```
+gantri plugin dataverse profiles      # List all configured profiles
+gantri plugin dataverse switch <name> # Switch active profile
+gantri plugin dataverse test [name]   # Test a connection
+gantri plugin dataverse current       # Show active profile
+```
+
+Plugins access Dataverse through the shared connection provider:
+
+```csharp
+var provider = context.Services?.GetService<IDataverseConnectionProvider>();
+var conn = await provider.GetActiveConnectionAsync(ct);
+```
 
 ## Architecture
 
@@ -161,10 +205,11 @@ Gantri is under active development. The following phases are complete:
 - [x] **Phase 14** — CLI polish (workflow, schedule, and config validate commands)
 - [x] **Phase 15** — Integration testing and hardening
 - [x] **Phase 16** — Agent tool calling (MCP auto-connect, working directory, parameter normalization)
-- [x] **Phase 17** — Microsoft Agent Framework integration (Bridge layer, AF agents, group chat orchestration, dual-mode workflow engine)
+- [x] **Phase 17** — Microsoft Agent Framework integration (Bridge layer, AF agents, AF native group chat workflows with `RoundRobinGroupChatManager`, dual-mode workflow engine)
 - [x] **Phase 18** — Interactive console with slash commands, streaming agent responses, human-in-the-loop tool approval, and inline workflow approval
 - [x] **Phase 19** — Agentic coding (coding plugins, agents, and workflows)
 - [x] **Phase 20** — AG-UI + A2A protocol hosting (Web host, IAgentProvider, MapAGUI/MapA2A endpoints)
+- [x] **Phase 21** — Shared connection providers and Dataverse integration (IPluginServices promotion, generic IConnectionProvider/IServiceConnection abstractions, Dataverse SDK with connection pooling and multi-profile auth, dataverse-tools plugin, CLI connection management commands)
 
 **Test coverage:** Comprehensive unit and integration test suites are included across core, domain, bridge, and host-facing paths.
 

@@ -12,13 +12,13 @@ using Microsoft.Extensions.Options;
 namespace Gantri.Integration.Tests;
 
 /// <summary>
-/// E2E #3: Three agents (content-writer, fact-checker, editor) collaborate sequentially.
-/// The writer uses file-save plugin. A hook monitors all agent:*:model-call:before events.
+/// E2E #3: Three agents (content-writer, fact-checker, editor) collaborate via AF native group chat workflow.
+/// A hook monitors all agent:*:model-call:before events.
 /// </summary>
 public class GroupChatContentReviewTests
 {
     [Fact]
-    public async Task GroupChat_ThreeAgents_ExecutesSequentially()
+    public async Task GroupChat_ThreeAgents_ExecutesViaAfWorkflow()
     {
         var firedEvents = new List<string>();
         var pipeline = Substitute.For<IHookPipeline>();
@@ -50,46 +50,66 @@ public class GroupChatContentReviewTests
         var agentCallOrder = new List<string>();
 
         var mockClient = Substitute.For<IChatClient>();
+
+        // Helper to identify agent from instructions and return appropriate response
+        string IdentifyAndRespond(ChatOptions? options, IEnumerable<ChatMessage> messages)
+        {
+            var instructions = options?.Instructions
+                ?? messages.FirstOrDefault(m => m.Role == ChatRole.System)?.Text
+                ?? "";
+
+            if (instructions.Contains("content writer", StringComparison.OrdinalIgnoreCase))
+            {
+                agentCallOrder.Add("content-writer");
+                return "# Draft: AI Agents\n\nAI agents are revolutionizing software development...";
+            }
+            else if (instructions.Contains("fact-checker", StringComparison.OrdinalIgnoreCase))
+            {
+                agentCallOrder.Add("fact-checker");
+                return "Fact check: All claims verified. No issues found.";
+            }
+            else if (instructions.Contains("editor", StringComparison.OrdinalIgnoreCase))
+            {
+                agentCallOrder.Add("editor");
+                return "# AI Agents: A Comprehensive Overview\n\nAI agents are transforming the industry...";
+            }
+            else
+            {
+                agentCallOrder.Add("unknown");
+                return "Response";
+            }
+        }
+
         mockClient.GetResponseAsync(
             Arg.Any<IEnumerable<ChatMessage>>(),
             Arg.Any<ChatOptions?>(),
             Arg.Any<CancellationToken>())
             .Returns(callInfo =>
             {
-                var messages = callInfo.ArgAt<IEnumerable<ChatMessage>>(0).ToList();
-                var options = callInfo.ArgAt<ChatOptions?>(1);
-
-                // AF passes agent instructions via ChatOptions.Instructions, not as a system message
-                var instructions = options?.Instructions
-                    ?? messages.FirstOrDefault(m => m.Role == ChatRole.System)?.Text
-                    ?? "";
-
-                string response;
-                if (instructions.Contains("content writer", StringComparison.OrdinalIgnoreCase))
-                {
-                    agentCallOrder.Add("content-writer");
-                    response = "# Draft: AI Agents\n\nAI agents are revolutionizing software development...";
-                }
-                else if (instructions.Contains("fact-checker", StringComparison.OrdinalIgnoreCase))
-                {
-                    agentCallOrder.Add("fact-checker");
-                    response = "Fact check: All claims verified. No issues found.";
-                }
-                else if (instructions.Contains("editor", StringComparison.OrdinalIgnoreCase))
-                {
-                    agentCallOrder.Add("editor");
-                    response = "# AI Agents: A Comprehensive Overview\n\nAI agents are transforming the industry...";
-                }
-                else
-                {
-                    agentCallOrder.Add("unknown");
-                    response = "Response";
-                }
-
+                var msgs = callInfo.ArgAt<IEnumerable<ChatMessage>>(0).ToList();
+                var opts = callInfo.ArgAt<ChatOptions?>(1);
+                var response = IdentifyAndRespond(opts, msgs);
                 return Task.FromResult(new ChatResponse(new List<ChatMessage>
                 {
                     new(ChatRole.Assistant, response)
                 }));
+            });
+
+        // AF Workflows uses the streaming path internally even for non-streaming RunAsync
+        mockClient.GetStreamingResponseAsync(
+            Arg.Any<IEnumerable<ChatMessage>>(),
+            Arg.Any<ChatOptions?>(),
+            Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                var msgs = callInfo.ArgAt<IEnumerable<ChatMessage>>(0).ToList();
+                var opts = callInfo.ArgAt<ChatOptions?>(1);
+                var response = IdentifyAndRespond(opts, msgs);
+                var updates = new List<ChatResponseUpdate>
+                {
+                    new(ChatRole.Assistant, response)
+                };
+                return updates.ToAsyncEnumerable();
             });
 
         var pluginRouter = Substitute.For<IPluginRouter>();
@@ -133,13 +153,14 @@ public class GroupChatContentReviewTests
 
         var result = await orchestrator.RunGroupChatAsync(
             ["content-writer", "fact-checker", "editor"],
-            "Write about AI agents");
+            "Write about AI agents",
+            maxIterations: 3);
 
-        // All 3 agents should have been invoked in order
-        agentCallOrder.Should().HaveCount(3);
-        agentCallOrder[0].Should().Be("content-writer");
-        agentCallOrder[1].Should().Be("fact-checker");
-        agentCallOrder[2].Should().Be("editor");
+        // All 3 agents should have been invoked
+        agentCallOrder.Should().HaveCountGreaterThanOrEqualTo(3);
+        agentCallOrder.Should().Contain("content-writer");
+        agentCallOrder.Should().Contain("fact-checker");
+        agentCallOrder.Should().Contain("editor");
 
         // Final output should be from the editor
         result.Should().Contain("Comprehensive Overview");

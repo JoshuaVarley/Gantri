@@ -1,6 +1,7 @@
 using Gantri.Abstractions.Plugins;
 using Gantri.Plugins.Native;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Gantri.Plugins;
 
@@ -18,6 +19,10 @@ public static class PluginServiceExtensions
         services.AddSingleton<PluginManager>();
         services.AddSingleton<PluginRouter>();
         services.AddSingleton<IPluginRouter>(sp => sp.GetRequiredService<PluginRouter>());
+
+        // Plugin services — DI-backed service provider for plugins
+        services.AddSingleton<Gantri.Abstractions.Plugins.IPluginServices>(sp =>
+            new DefaultPluginServices(sp, sp.GetRequiredService<ILoggerFactory>()));
 
         return services;
     }

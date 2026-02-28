@@ -31,6 +31,7 @@ public sealed class GantriAgentFactory
     private readonly ILogger<GantriAgentFactory> _logger;
     private readonly ILoggerFactory _loggerFactory;
     private readonly string _defaultWorkingDirectory;
+    private readonly IPluginServices? _pluginServices;
 
     public GantriAgentFactory(
         ModelProviderRegistry modelProviderRegistry,
@@ -42,7 +43,8 @@ public sealed class GantriAgentFactory
         IOptions<WorkingDirectoryOptions> workingDirectoryOptions,
         Func<string, AiModelOptions, IChatClient>? clientFactory = null,
         IToolApprovalHandler? approvalHandler = null,
-        McpPermissionManager? mcpPermissionManager = null
+        McpPermissionManager? mcpPermissionManager = null,
+        IPluginServices? pluginServices = null
     )
     {
         _modelProviderRegistry = modelProviderRegistry;
@@ -55,6 +57,7 @@ public sealed class GantriAgentFactory
         _loggerFactory = loggerFactory;
         _clientFactory = clientFactory;
         _defaultWorkingDirectory = workingDirectoryOptions.Value.DefaultDirectory;
+        _pluginServices = pluginServices;
     }
 
     /// <summary>
@@ -192,6 +195,7 @@ public sealed class GantriAgentFactory
                             action.Description,
                             action.Parameters,
                             _pluginRouter,
+                            _pluginServices,
                             workingDirectory,
                             _approvalHandler,
                             agentAdditionalParams

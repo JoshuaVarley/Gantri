@@ -11,5 +11,6 @@ framework:
     - scheduling.yaml
     - mcp.yaml
     - worker.yaml
+    - dataverse.yaml
     - agents/*.yaml
     - workflows/*.yaml

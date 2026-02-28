@@ -46,7 +46,8 @@ internal sealed class ReflectionPluginActionAdapter
                 ActionName = input.ActionName,
                 Parameters = input.Parameters,
                 CancellationToken = cancellationToken,
-                WorkingDirectory = input.WorkingDirectory
+                WorkingDirectory = input.WorkingDirectory,
+                Services = input.Services
             };
             var result = await directAction.ExecuteAsync(ctx, cancellationToken);
             return result.Success
@@ -88,6 +89,7 @@ internal sealed class ReflectionPluginActionAdapter
         _actionContextType.GetProperty("Parameters")?.SetValue(context, input.Parameters);
         _actionContextType.GetProperty("CancellationToken")?.SetValue(context, cancellationToken);
         _actionContextType.GetProperty("WorkingDirectory")?.SetValue(context, input.WorkingDirectory);
+        _actionContextType.GetProperty("Services")?.SetValue(context, input.Services);
         return context;
     }
 }

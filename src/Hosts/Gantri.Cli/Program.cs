@@ -9,6 +9,7 @@ using Gantri.Cli.Infrastructure;
 using Gantri.Cli.Interactive;
 using Gantri.Cli.Interactive.Commands;
 using Gantri.Configuration;
+using Gantri.Dataverse;
 using Gantri.Hooks;
 using Gantri.Mcp;
 using Gantri.Plugins;
@@ -104,6 +105,9 @@ services.AddSingleton<IJobScheduler>(new ReadOnlyJobScheduler(jobDefs));
 // Shared host registrations: definition registries, scheduling jobs
 services.AddGantriFromConfig(config);
 
+// Dataverse connection management (after config is loaded)
+services.AddGantriDataverse(config?.Dataverse);
+
 // Register Azure-aware chat client factory for GantriAgentFactory
 if (config?.Ai.Providers is { Count: > 0 })
 {
@@ -142,6 +146,10 @@ services.AddTransient<WorkerStatusCommand>();
 services.AddTransient<WorkerJobsListCommand>();
 services.AddTransient<WorkerJobsTriggerCommand>();
 services.AddTransient<GroupChatCommand>();
+services.AddTransient<DataverseProfilesCommand>();
+services.AddTransient<DataverseSwitchCommand>();
+services.AddTransient<DataverseTestCommand>();
+services.AddTransient<DataverseCurrentCommand>();
 
 // Interactive console services
 var isInteractive = args.Length == 0;
@@ -291,6 +299,22 @@ app.Configure(appConfig =>
             plugin
                 .AddCommand<PluginInspectCommand>("inspect")
                 .WithDescription("Show detailed information about a plugin");
+
+            plugin.AddBranch(
+                "dataverse",
+                dataverse =>
+                {
+                    dataverse.SetDescription("Dataverse connection management");
+                    dataverse.AddCommand<DataverseProfilesCommand>("profiles")
+                        .WithDescription("List all configured Dataverse profiles");
+                    dataverse.AddCommand<DataverseSwitchCommand>("switch")
+                        .WithDescription("Switch the active Dataverse profile");
+                    dataverse.AddCommand<DataverseTestCommand>("test")
+                        .WithDescription("Test a Dataverse connection");
+                    dataverse.AddCommand<DataverseCurrentCommand>("current")
+                        .WithDescription("Show the current active Dataverse profile");
+                }
+            );
         }
     );
 

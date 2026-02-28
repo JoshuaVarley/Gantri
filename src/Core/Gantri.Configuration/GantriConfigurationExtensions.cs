@@ -35,4 +35,5 @@ public sealed class GantriConfigRoot
     public SchedulingOptions Scheduling { get; set; } = new();
     public McpOptions Mcp { get; set; } = new();
     public WorkerOptions Worker { get; set; } = new();
+    public DataverseOptions Dataverse { get; set; } = new();
 }

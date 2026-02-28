@@ -34,6 +34,9 @@
   <Folder Name="/plugins/built-in/web-fetch/">
     <Project Path="plugins/built-in/web-fetch/WebFetch.Plugin.csproj" />
   </Folder>
+  <Folder Name="/plugins/built-in/dataverse-tools/">
+    <Project Path="plugins/built-in/dataverse-tools/Gantri.Dataverse.Tools.csproj" />
+  </Folder>
   <Folder Name="/resources/">
     <File Path="resources/gantri-logo.svg" />
   </Folder>
@@ -49,6 +52,8 @@
     <Project Path="src/Core/Gantri.Plugins.Wasm/Gantri.Plugins.Wasm.csproj" />
     <Project Path="src/Core/Gantri.Plugins/Gantri.Plugins.csproj" />
     <Project Path="src/Core/Gantri.Telemetry/Gantri.Telemetry.csproj" />
+    <Project Path="src/Core/Gantri.Dataverse.Sdk/Gantri.Dataverse.Sdk.csproj" />
+    <Project Path="src/Core/Gantri.Dataverse/Gantri.Dataverse.csproj" />
   </Folder>
   <Folder Name="/src/Domain/">
     <Project Path="src/Domain/Gantri.Agents/Gantri.Agents.csproj" />

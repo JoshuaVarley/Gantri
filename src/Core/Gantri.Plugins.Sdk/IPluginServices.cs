@@ -1,27 +1,15 @@
-using Microsoft.Extensions.AI;
+using Gantri.Abstractions.Plugins;
 
 namespace Gantri.Plugins.Sdk;
 
-public interface IPluginServices
-{
-    ILogger GetLogger(string categoryName);
-    string? GetConfig(string key);
-    IChatClient? GetChatClient(string? modelAlias = null);
-}
+public interface IPluginServices : Gantri.Abstractions.Plugins.IPluginServices;
 
-public interface ILogger
-{
-    void Log(LogLevel level, string message);
-    void Debug(string message);
-    void Info(string message);
-    void Warning(string message);
-    void Error(string message, Exception? exception = null);
-}
+public interface ILogger : IPluginLogger;
 
 public enum LogLevel
 {
-    Debug,
-    Information,
-    Warning,
-    Error
+    Debug = PluginLogLevel.Debug,
+    Information = PluginLogLevel.Information,
+    Warning = PluginLogLevel.Warning,
+    Error = PluginLogLevel.Error
 }
