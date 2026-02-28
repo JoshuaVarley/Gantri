@@ -1,0 +1,18 @@
+agents:
+  code-reviewer:
+    name: code-reviewer
+    model: gpt-5-mini
+    provider: azure-openai
+    system_prompt: >
+      You are a code review assistant. Analyze code for bugs,
+      security issues, and style improvements. Be concise and
+      actionable in your feedback.
+
+  ticket-triager:
+    name: ticket-triager
+    model: gpt-5-mini
+    provider: azure-openai
+    system_prompt: >
+      You are a ticket triage assistant. Classify incoming support
+      tickets by priority (P0-P3) and category. Suggest routing
+      to the appropriate team.

@@ -1,0 +1,40 @@
+{
+    "name": "file-edit",
+    "version": "1.0.0",
+    "type": "native",
+    "description": "Edit files using search-replace or line insertion",
+    "entry": "FileEdit.Plugin.dll",
+    "capabilities": { "required": ["fs-read", "fs-write"], "optional": [] },
+    "exports": {
+        "actions": [
+            {
+                "name": "search-replace",
+                "description": "Find and replace text in a file",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "path": { "type": "string", "description": "File path to edit" },
+                        "search": { "type": "string", "description": "Exact text to find" },
+                        "replace": { "type": "string", "description": "Replacement text" },
+                        "occurrence": { "type": "integer", "description": "Which occurrence to replace (1=first, 0=all, default: 1)" }
+                    },
+                    "required": ["path", "search", "replace"]
+                }
+            },
+            {
+                "name": "insert",
+                "description": "Insert text at a specific line number",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "path": { "type": "string", "description": "File path to edit" },
+                        "line": { "type": "integer", "description": "Line number to insert before" },
+                        "content": { "type": "string", "description": "Text content to insert" }
+                    },
+                    "required": ["path", "line", "content"]
+                }
+            }
+        ],
+        "hooks": []
+    }
+}

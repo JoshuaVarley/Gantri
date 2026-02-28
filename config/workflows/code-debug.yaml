@@ -1,0 +1,18 @@
+workflows:
+  code-debug:
+    name: code-debug
+    description: Debug an issue, apply fix, and verify
+    trigger: manual
+    steps:
+      - id: debug
+        type: agent
+        agent: coding-debugger
+        input: "${input}"
+      - id: test
+        type: agent
+        agent: coding-tester
+        input: "Verify the fix applied in the debug step:\n${steps.debug.output}"
+      - id: review
+        type: agent
+        agent: coding-reviewer
+        input: "Review the fix applied during debugging:\n${steps.debug.output}"

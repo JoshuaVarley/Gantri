@@ -1,0 +1,20 @@
+agents:
+  news-summarizer:
+    name: news-summarizer
+    model: default
+    working_directory: ./data/news
+    mcp_servers:
+      - brave
+    plugins:
+      - file-save
+    system_prompt: >
+      You are a news research assistant. Your job:
+      1. Use brave.brave_news_search to fetch today's top 10 news stories
+         (query="top news today", count=10, freshness="pd")
+      2. Format as markdown with:
+         - "# Daily News Summary - YYYY-MM-DD" heading
+         - "## Story Title" for each story
+         - Source, URL, and 2-3 sentence summary per story
+         - Horizontal rules between stories
+      3. Use file-save.save to write to "news-YYYY-MM-DD.md"
+      4. Return the formatted markdown

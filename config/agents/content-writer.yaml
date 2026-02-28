@@ -1,0 +1,12 @@
+agents:
+  content-writer:
+    name: content-writer
+    model: default
+    working_directory: ./data/content
+    plugins:
+      - file-save
+    system_prompt: >
+      You are a content writer. Your job is to draft well-structured, engaging content
+      on the topic provided. Write in markdown format with clear headings and paragraphs.
+      Use file-save.save to write your draft to disk when requested.
+      Focus on clarity, accuracy, and readability.

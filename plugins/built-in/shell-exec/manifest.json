@@ -1,0 +1,23 @@
+{
+    "name": "shell-exec",
+    "version": "1.0.0",
+    "type": "native",
+    "description": "Execute shell commands with an optional allowlist",
+    "entry": "ShellExec.Plugin.dll",
+    "capabilities": { "required": ["process-exec"], "optional": [] },
+    "exports": {
+        "actions": [{
+            "name": "run",
+            "description": "Execute a shell command and return its output",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "command": { "type": "string", "description": "Shell command to execute" },
+                    "timeout_seconds": { "type": "integer", "description": "Timeout in seconds (default: 120)" }
+                },
+                "required": ["command"]
+            }
+        }],
+        "hooks": []
+    }
+}

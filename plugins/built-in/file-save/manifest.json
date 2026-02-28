@@ -1,0 +1,28 @@
+{
+    "name": "file-save",
+    "version": "1.0.0",
+    "type": "native",
+    "description": "Saves content to a file on disk",
+    "entry": "FileSave.Plugin.dll",
+    "capabilities": {
+        "required": ["fs-write"],
+        "optional": []
+    },
+    "exports": {
+        "actions": [
+            {
+                "name": "save",
+                "description": "Write content to a file path, creating directories as needed",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "path": { "type": "string", "description": "File path to write to" },
+                        "content": { "type": "string", "description": "Text content to save" }
+                    },
+                    "required": ["path", "content"]
+                }
+            }
+        ],
+        "hooks": []
+    }
+}

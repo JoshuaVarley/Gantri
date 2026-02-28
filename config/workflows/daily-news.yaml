@@ -1,0 +1,10 @@
+workflows:
+  daily-news:
+    name: daily-news
+    description: Fetches and saves a daily news summary
+    trigger: scheduled
+    steps:
+      - id: fetch-and-summarize
+        type: agent
+        agent: news-summarizer
+        input: "Fetch today's top news stories, format as markdown, and save to disk."

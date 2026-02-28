@@ -1,0 +1,8 @@
+<Project>
+  <!-- Prevent plugin manifest.json from flowing into publish output of consuming
+       projects (e.g. test projects). The host project handles manifest publishing
+       through its own <None> items. -->
+  <ItemGroup>
+    <None Update="manifest.json" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,15 @@
+framework:
+  name: Gantri
+  version: 0.1.0
+  log_level: Information
+  data_dir: ./data
+  imports:
+    - ai.yaml
+    - agents.yaml
+    - plugins.yaml
+    - telemetry.yaml
+    - scheduling.yaml
+    - mcp.yaml
+    - worker.yaml
+    - agents/*.yaml
+    - workflows/*.yaml

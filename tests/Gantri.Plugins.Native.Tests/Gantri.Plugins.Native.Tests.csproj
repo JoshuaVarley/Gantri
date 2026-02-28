@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="FluentAssertions" Version="8.4.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Core\Gantri.Plugins.Native\Gantri.Plugins.Native.csproj" />
+    <ProjectReference Include="..\..\plugins\built-in\file-save\FileSave.Plugin.csproj" />
+    <ProjectReference Include="..\..\plugins\built-in\file-glob\FileGlob.Plugin.csproj" />
+    <ProjectReference Include="..\..\plugins\built-in\file-read\FileRead.Plugin.csproj" />
+    <ProjectReference Include="..\..\plugins\built-in\directory-list\DirectoryList.Plugin.csproj" />
+    <ProjectReference Include="..\..\plugins\built-in\file-edit\FileEdit.Plugin.csproj" />
+    <ProjectReference Include="..\..\plugins\built-in\file-delete\FileDelete.Plugin.csproj" />
+    <ProjectReference Include="..\..\plugins\built-in\shell-exec\ShellExec.Plugin.csproj" />
+    <ProjectReference Include="..\..\plugins\built-in\git-operations\GitOperations.Plugin.csproj" />
+    <ProjectReference Include="..\..\plugins\built-in\project-detect\ProjectDetect.Plugin.csproj" />
+    <ProjectReference Include="..\..\plugins\built-in\web-fetch\WebFetch.Plugin.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+    <Using Include="FluentAssertions" />
+  </ItemGroup>
+
+</Project>

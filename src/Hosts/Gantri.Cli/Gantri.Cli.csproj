@@ -1,0 +1,81 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>Gantri.Cli</RootNamespace>
+    <!-- Wasmtime only ships native binaries for x64/arm64 — no x86 support -->
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Gantri.Integration.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
+    <PackageReference Include="Spectre.Console" Version="0.49.1" />
+    <PackageReference Include="Spectre.Console.Cli" Version="0.49.1" />
+    <PackageReference Include="Azure.AI.OpenAI" Version="2.8.0-beta.1" />
+    <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="1.0.0-rc2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Gantri.Abstractions\Gantri.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Core\Gantri.AI\Gantri.AI.csproj" />
+    <ProjectReference Include="..\..\Core\Gantri.Configuration\Gantri.Configuration.csproj" />
+    <ProjectReference Include="..\..\Core\Gantri.Hooks\Gantri.Hooks.csproj" />
+    <ProjectReference Include="..\..\Core\Gantri.Mcp\Gantri.Mcp.csproj" />
+    <ProjectReference Include="..\..\Core\Gantri.Plugins\Gantri.Plugins.csproj" />
+    <ProjectReference Include="..\..\Core\Gantri.Telemetry\Gantri.Telemetry.csproj" />
+    <ProjectReference Include="..\..\Core\Gantri.Plugins.Wasm\Gantri.Plugins.Wasm.csproj" />
+    <ProjectReference Include="..\..\Domain\Gantri.Agents\Gantri.Agents.csproj" />
+    <ProjectReference Include="..\..\Domain\Gantri.Workflows\Gantri.Workflows.csproj" />
+    <ProjectReference Include="..\..\Domain\Gantri.Scheduling\Gantri.Scheduling.csproj" />
+    <ProjectReference Include="..\..\Integration\Gantri.Bridge\Gantri.Bridge.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\config\**\*" LinkBase="config" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Plugin manifests are handled as standard content items so the SDK
+         includes them in both build and publish output without conflicts. -->
+    <None Include="..\..\..\plugins\built-in\*\manifest.json" LinkBase="plugins\built-in" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Copy built-in plugin compiled assemblies so plugins are discoverable
+       from both the build output (bin/) and publish output directories.
+       Manifests are handled above via <None> items.
+       Layout: plugins/built-in/<name>/<Entry>.dll -->
+  <PropertyGroup>
+    <_PluginsSource>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\..\..\plugins\built-in'))</_PluginsSource>
+    <UserSecretsId>f743c298-8070-4f1c-9ddc-db3df16b7f71</UserSecretsId>
+  </PropertyGroup>
+
+  <Target Name="CopyBuiltInPlugins" AfterTargets="Build">
+    <PropertyGroup>
+      <_PluginsDest>$(OutputPath)plugins\built-in</_PluginsDest>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_BuildPluginDll Include="$(_PluginsSource)\*\bin\$(Configuration)\$(TargetFramework)\*.dll" />
+      <_BuildPluginDll Update="@(_BuildPluginDll)" PluginName="$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName('%(FullPath)'))))))))))" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_BuildPluginDll)" DestinationFiles="@(_BuildPluginDll->'$(_PluginsDest)\%(PluginName)\%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="CopyBuiltInPluginsOnPublish" AfterTargets="Publish">
+    <PropertyGroup>
+      <_PluginsPubDest>$(PublishDir)plugins\built-in</_PluginsPubDest>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_PubPluginDll Include="$(_PluginsSource)\*\bin\$(Configuration)\$(TargetFramework)\*.dll" />
+      <_PubPluginDll Update="@(_PubPluginDll)" PluginName="$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName('%(FullPath)'))))))))))" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_PubPluginDll)" DestinationFiles="@(_PubPluginDll->'$(_PluginsPubDest)\%(PluginName)\%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

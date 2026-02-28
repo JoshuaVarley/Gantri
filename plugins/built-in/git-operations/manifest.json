@@ -1,0 +1,62 @@
+{
+    "name": "git-operations",
+    "version": "1.0.0",
+    "type": "native",
+    "description": "Git version control operations",
+    "entry": "GitOperations.Plugin.dll",
+    "capabilities": { "required": ["process-exec", "fs-read"], "optional": [] },
+    "exports": {
+        "actions": [
+            {
+                "name": "status",
+                "description": "Show git working tree status",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "directory": { "type": "string", "description": "Repository directory (defaults to working directory)" }
+                    },
+                    "required": []
+                }
+            },
+            {
+                "name": "diff",
+                "description": "Show git diff",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "directory": { "type": "string", "description": "Repository directory" },
+                        "staged": { "type": "boolean", "description": "Show staged changes (default: false)" },
+                        "path": { "type": "string", "description": "Limit diff to a specific path" }
+                    },
+                    "required": []
+                }
+            },
+            {
+                "name": "log",
+                "description": "Show git commit log",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "directory": { "type": "string", "description": "Repository directory" },
+                        "count": { "type": "integer", "description": "Number of commits to show (default: 10)" },
+                        "oneline": { "type": "boolean", "description": "Use one-line format (default: true)" }
+                    },
+                    "required": []
+                }
+            },
+            {
+                "name": "commit",
+                "description": "Stage files and create a commit",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "message": { "type": "string", "description": "Commit message" },
+                        "paths": { "type": "array", "items": { "type": "string" }, "description": "Files to stage (stages all if empty)" }
+                    },
+                    "required": ["message"]
+                }
+            }
+        ],
+        "hooks": []
+    }
+}

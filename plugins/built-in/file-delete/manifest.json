@@ -1,0 +1,22 @@
+{
+    "name": "file-delete",
+    "version": "1.0.0",
+    "type": "native",
+    "description": "Deletes a file from disk",
+    "entry": "FileDelete.Plugin.dll",
+    "capabilities": { "required": ["fs-write"], "optional": [] },
+    "exports": {
+        "actions": [{
+            "name": "delete",
+            "description": "Delete a file",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "path": { "type": "string", "description": "File path to delete" }
+                },
+                "required": ["path"]
+            }
+        }],
+        "hooks": []
+    }
+}

@@ -1,0 +1,29 @@
+{
+    "name": "file-read",
+    "version": "1.0.0",
+    "type": "native",
+    "description": "Reads file contents with line numbers",
+    "entry": "FileRead.Plugin.dll",
+    "capabilities": {
+        "required": ["fs-read"],
+        "optional": []
+    },
+    "exports": {
+        "actions": [
+            {
+                "name": "read",
+                "description": "Read file contents with line numbers, supporting offset and limit",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "path": { "type": "string", "description": "File path to read" },
+                        "offset": { "type": "integer", "description": "Starting line number (1-based, default: 1)" },
+                        "limit": { "type": "integer", "description": "Maximum number of lines to return (default: 500)" }
+                    },
+                    "required": ["path"]
+                }
+            }
+        ],
+        "hooks": []
+    }
+}

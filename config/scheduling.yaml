@@ -1,0 +1,10 @@
+scheduling:
+  storage:
+    provider: sqlite
+    connection_string: "Data Source=data/gantri-scheduling.db"
+  jobs:
+    daily-news-9pm:
+      type: workflow
+      workflow: daily-news
+      cron: "0 21 * * *"
+      enabled: true

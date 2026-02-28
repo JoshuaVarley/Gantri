@@ -1,0 +1,22 @@
+{
+    "name": "project-detect",
+    "version": "1.0.0",
+    "type": "native",
+    "description": "Detects project language, framework, and build tools",
+    "entry": "ProjectDetect.Plugin.dll",
+    "capabilities": { "required": ["fs-read"], "optional": [] },
+    "exports": {
+        "actions": [{
+            "name": "analyze",
+            "description": "Analyze a directory to detect project language, framework, and build tools",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "directory": { "type": "string", "description": "Directory to analyze (defaults to working directory)" }
+                },
+                "required": []
+            }
+        }],
+        "hooks": []
+    }
+}

@@ -1,0 +1,51 @@
+ai:
+  default_model: default
+  providers:
+    azure-openai:
+      endpoint: https://foundry-example.cognitiveservices.azure.com/
+      api_key: ${AZURE_OPENAI_API_KEY}
+      models:
+        # Centralized alias — update to change all general-purpose agents at once
+        default:
+          id: gpt-5-mini
+          description: Default model for general-purpose agents
+          max_tokens: 8192
+          default_temperature: 0.3
+        gpt-5-mini:
+          id: gpt-5-mini
+          description: Azure Foundry GPT-5 Mini deployment
+          max_tokens: 8192
+          default_temperature: 0.3
+        gpt-5.1-codex-mini:
+          id: gpt-5.1-codex-mini
+          api_type: responses
+          description: GPT-5.1 Codex Mini optimized for coding tasks
+          max_tokens: 16384
+          default_temperature: 0.2
+        # Centralized alias — update to change all coding agents at once
+        default-coding:
+          id: gpt-5.1-codex-mini
+          api_type: responses
+          description: Default model for coding agents
+          max_tokens: 16384
+          default_temperature: 0.2
+    azure-ai-foundry:
+      base_url: https://foundry-example.services.ai.azure.com/openai/v1/
+      api_key: ${AZURE_OPENAI_API_KEY}
+      models:
+        deepseek-v3.2:
+          id: DeepSeek-V3.2
+          description: DeepSeek V3.2 coding model (supports tool calling)
+          max_tokens: 8192
+          default_temperature: 0.2
+        # Keep Speciale available for reasoning-only tasks
+        deepseek-speciale:
+          id: DeepSeek-V3.2-Speciale
+          description: DeepSeek reasoning model (no tool calling support)
+          max_tokens: 8192
+          default_temperature: 0.3
+        #default-coding:
+        #id: Kimi-K2.5
+        #description: Kimi-K2.5 model
+        #max_tokens: 16384
+        #default_temperature: 0.2

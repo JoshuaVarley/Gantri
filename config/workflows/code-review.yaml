@@ -1,0 +1,10 @@
+workflows:
+  code-review:
+    name: code-review
+    description: Review uncommitted code changes
+    trigger: manual
+    steps:
+      - id: review
+        type: agent
+        agent: coding-reviewer
+        input: "Review all uncommitted changes in the working directory. Use git-operations to inspect the diff and file-read to examine changed files in detail."

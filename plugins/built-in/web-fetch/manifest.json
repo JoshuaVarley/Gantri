@@ -1,0 +1,23 @@
+{
+    "name": "web-fetch",
+    "version": "1.0.0",
+    "type": "native",
+    "description": "Fetches content from web URLs",
+    "entry": "WebFetch.Plugin.dll",
+    "capabilities": { "required": ["http-request"], "optional": [] },
+    "exports": {
+        "actions": [{
+            "name": "fetch",
+            "description": "Fetch content from a URL, stripping HTML tags for clean text output",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "url": { "type": "string", "description": "URL to fetch (auto-upgrades HTTP to HTTPS)" },
+                    "max_length": { "type": "integer", "description": "Maximum content length in characters (default: 50000)" }
+                },
+                "required": ["url"]
+            }
+        }],
+        "hooks": []
+    }
+}

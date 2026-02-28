@@ -1,0 +1,30 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.dll
+*.exe
+*.pdb
+*.nupkg
+data/
+
+## IDE
+.vs/
+.vscode/
+.claude/
+*.sln.docstates
+
+## OS
+Thumbs.db
+.DS_Store
+*.db
+
+## Secrets
+.env
+
+## Build
+artifacts/
+publish/
+TestResults/

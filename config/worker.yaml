@@ -1,0 +1,7 @@
+worker:
+  mcp:
+    transport: stdio
+    host: localhost
+    port: 5100
+    auth:
+      type: none

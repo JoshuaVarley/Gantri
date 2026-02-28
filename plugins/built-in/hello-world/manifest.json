@@ -1,0 +1,27 @@
+{
+    "name": "hello-world",
+    "version": "1.0.0",
+    "type": "native",
+    "description": "A simple hello world test plugin",
+    "entry": "HelloWorld.Plugin.dll",
+    "capabilities": {
+        "required": [],
+        "optional": []
+    },
+    "exports": {
+        "actions": [
+            {
+                "name": "hello",
+                "description": "Returns a greeting with echoed input",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "name": { "type": "string", "description": "Name to greet" }
+                    },
+                    "required": []
+                }
+            }
+        ],
+        "hooks": []
+    }
+}

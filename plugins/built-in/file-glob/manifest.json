@@ -1,0 +1,29 @@
+{
+    "name": "file-glob",
+    "version": "1.0.0",
+    "type": "native",
+    "description": "Searches files using glob patterns and optional text matching",
+    "entry": "FileGlob.Plugin.dll",
+    "capabilities": {
+        "required": ["fs-read"],
+        "optional": []
+    },
+    "exports": {
+        "actions": [
+            {
+                "name": "search",
+                "description": "Search for files matching a glob pattern, optionally filtering by content",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "directory": { "type": "string", "description": "Directory to search in (optional when agent has a working directory)" },
+                        "pattern": { "type": "string", "description": "Glob pattern to match files (default: *.md)" },
+                        "search_term": { "type": "string", "description": "Optional text to search within matching files" }
+                    },
+                    "required": []
+                }
+            }
+        ],
+        "hooks": []
+    }
+}

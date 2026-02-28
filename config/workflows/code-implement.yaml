@@ -1,0 +1,22 @@
+workflows:
+  code-implement:
+    name: code-implement
+    description: Plan, implement, test, and review code changes
+    trigger: manual
+    steps:
+      - id: plan
+        type: agent
+        agent: coding-planner
+        input: "${input}"
+      - id: implement
+        type: agent
+        agent: coding-implementer
+        input: "Implement the following plan:\n${steps.plan.output}"
+      - id: test
+        type: agent
+        agent: coding-tester
+        input: "Run tests and verify the changes from the implementation step:\n${steps.implement.output}"
+      - id: review
+        type: agent
+        agent: coding-reviewer
+        input: "Review the code changes made during implementation:\n${steps.implement.output}"

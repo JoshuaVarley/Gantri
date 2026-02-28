@@ -1,0 +1,14 @@
+workflows:
+  code-test:
+    name: code-test
+    description: Analyze test coverage and write new tests
+    trigger: manual
+    steps:
+      - id: analyze
+        type: agent
+        agent: coding-planner
+        input: "Analyze the project's test coverage. Identify areas with missing or weak test coverage. List specific test cases that should be added."
+      - id: write-tests
+        type: agent
+        agent: coding-tester
+        input: "Write new tests based on the coverage analysis:\n${steps.analyze.output}"

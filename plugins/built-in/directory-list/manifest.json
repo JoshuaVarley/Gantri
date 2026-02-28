@@ -1,0 +1,30 @@
+{
+    "name": "directory-list",
+    "version": "1.0.0",
+    "type": "native",
+    "description": "Lists directory contents in a tree format",
+    "entry": "DirectoryList.Plugin.dll",
+    "capabilities": {
+        "required": ["fs-read"],
+        "optional": []
+    },
+    "exports": {
+        "actions": [
+            {
+                "name": "tree",
+                "description": "List directory contents in an indented tree format with file sizes",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "directory": { "type": "string", "description": "Directory to list (defaults to working directory)" },
+                        "depth": { "type": "integer", "description": "Maximum depth to recurse (default: 3)" },
+                        "pattern": { "type": "string", "description": "Glob pattern to filter files" },
+                        "include_hidden": { "type": "boolean", "description": "Include hidden files/directories (default: false)" }
+                    },
+                    "required": []
+                }
+            }
+        ],
+        "hooks": []
+    }
+}

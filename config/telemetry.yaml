@@ -1,0 +1,16 @@
+telemetry:
+  enabled: true
+  service_name: gantri
+  service_version: "1.0.0"
+  traces:
+    exporter: otlp          # otlp | console | none
+  metrics:
+    exporter: otlp
+  logs:
+    exporter: otlp
+  # OTLP endpoint/protocol can be set via env vars:
+  #   OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
+  #   OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+  # Or override per-signal in config:
+  #   traces:
+  #     endpoint: http://localhost:4317

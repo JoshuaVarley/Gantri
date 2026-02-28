@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>Gantri.Bridge</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Agents.AI" Version="1.0.0-rc2" />
+    <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="1.0.0-rc2" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="10.3.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.3" />
+    <PackageReference Include="Azure.AI.OpenAI" Version="2.8.0-beta.1" />
+    <PackageReference Include="Polly.Core" Version="8.6.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Gantri.Abstractions\Gantri.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Core\Gantri.AI\Gantri.AI.csproj" />
+    <ProjectReference Include="..\..\Core\Gantri.Hooks\Gantri.Hooks.csproj" />
+    <ProjectReference Include="..\..\Core\Gantri.Mcp\Gantri.Mcp.csproj" />
+    <ProjectReference Include="..\..\Core\Gantri.Plugins\Gantri.Plugins.csproj" />
+    <ProjectReference Include="..\..\Core\Gantri.Telemetry\Gantri.Telemetry.csproj" />
+  </ItemGroup>
+
+</Project>

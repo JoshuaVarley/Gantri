@@ -1,0 +1,79 @@
+<Solution>
+  <Folder Name="/plugins/" />
+  <Folder Name="/plugins/built-in/" />
+  <Folder Name="/plugins/built-in/hello-world/">
+    <Project Path="plugins/built-in/hello-world/HelloWorld.Plugin.csproj" />
+  </Folder>
+  <Folder Name="/plugins/built-in/file-save/">
+    <Project Path="plugins/built-in/file-save/FileSave.Plugin.csproj" />
+  </Folder>
+  <Folder Name="/plugins/built-in/file-glob/">
+    <Project Path="plugins/built-in/file-glob/FileGlob.Plugin.csproj" />
+  </Folder>
+  <Folder Name="/plugins/built-in/file-read/">
+    <Project Path="plugins/built-in/file-read/FileRead.Plugin.csproj" />
+  </Folder>
+  <Folder Name="/plugins/built-in/file-edit/">
+    <Project Path="plugins/built-in/file-edit/FileEdit.Plugin.csproj" />
+  </Folder>
+  <Folder Name="/plugins/built-in/file-delete/">
+    <Project Path="plugins/built-in/file-delete/FileDelete.Plugin.csproj" />
+  </Folder>
+  <Folder Name="/plugins/built-in/directory-list/">
+    <Project Path="plugins/built-in/directory-list/DirectoryList.Plugin.csproj" />
+  </Folder>
+  <Folder Name="/plugins/built-in/shell-exec/">
+    <Project Path="plugins/built-in/shell-exec/ShellExec.Plugin.csproj" />
+  </Folder>
+  <Folder Name="/plugins/built-in/git-operations/">
+    <Project Path="plugins/built-in/git-operations/GitOperations.Plugin.csproj" />
+  </Folder>
+  <Folder Name="/plugins/built-in/project-detect/">
+    <Project Path="plugins/built-in/project-detect/ProjectDetect.Plugin.csproj" />
+  </Folder>
+  <Folder Name="/plugins/built-in/web-fetch/">
+    <Project Path="plugins/built-in/web-fetch/WebFetch.Plugin.csproj" />
+  </Folder>
+  <Folder Name="/resources/">
+    <File Path="resources/gantri-logo.svg" />
+  </Folder>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Core/">
+    <Project Path="src/Core/Gantri.Abstractions/Gantri.Abstractions.csproj" />
+    <Project Path="src/Core/Gantri.AI/Gantri.AI.csproj" />
+    <Project Path="src/Core/Gantri.Configuration/Gantri.Configuration.csproj" />
+    <Project Path="src/Core/Gantri.Hooks/Gantri.Hooks.csproj" />
+    <Project Path="src/Core/Gantri.Mcp/Gantri.Mcp.csproj" />
+    <Project Path="src/Core/Gantri.Plugins.Native/Gantri.Plugins.Native.csproj" />
+    <Project Path="src/Core/Gantri.Plugins.Sdk/Gantri.Plugins.Sdk.csproj" />
+    <Project Path="src/Core/Gantri.Plugins.Wasm/Gantri.Plugins.Wasm.csproj" />
+    <Project Path="src/Core/Gantri.Plugins/Gantri.Plugins.csproj" />
+    <Project Path="src/Core/Gantri.Telemetry/Gantri.Telemetry.csproj" />
+  </Folder>
+  <Folder Name="/src/Domain/">
+    <Project Path="src/Domain/Gantri.Agents/Gantri.Agents.csproj" />
+    <Project Path="src/Domain/Gantri.Workflows/Gantri.Workflows.csproj" />
+    <Project Path="src/Domain/Gantri.Scheduling/Gantri.Scheduling.csproj" />
+  </Folder>
+  <Folder Name="/src/Integration/">
+    <Project Path="src/Integration/Gantri.Bridge/Gantri.Bridge.csproj" />
+  </Folder>
+  <Folder Name="/src/Hosts/">
+    <Project Path="src/Hosts/Gantri.Cli/Gantri.Cli.csproj" />
+    <Project Path="src/Hosts/Gantri.Worker/Gantri.Worker.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Gantri.Abstractions.Tests/Gantri.Abstractions.Tests.csproj" />
+    <Project Path="tests/Gantri.Agents.Tests/Gantri.Agents.Tests.csproj" />
+    <Project Path="tests/Gantri.Hooks.Tests/Gantri.Hooks.Tests.csproj" />
+    <Project Path="tests/Gantri.Plugins.Native.Tests/Gantri.Plugins.Native.Tests.csproj" />
+    <Project Path="tests/Gantri.Plugins.Tests/Gantri.Plugins.Tests.csproj" />
+    <Project Path="tests/Gantri.Integration.Tests/Gantri.Integration.Tests.csproj" />
+    <Project Path="tests/Gantri.Scheduling.Tests/Gantri.Scheduling.Tests.csproj" />
+    <Project Path="tests/Gantri.Plugins.Wasm.Tests/Gantri.Plugins.Wasm.Tests.csproj" />
+    <Project Path="tests/Gantri.Workflows.Tests/Gantri.Workflows.Tests.csproj" />
+    <Project Path="tests/Gantri.Bridge.Tests/Gantri.Bridge.Tests.csproj" />
+    <Project Path="tests/Gantri.AI.Tests/Gantri.AI.Tests.csproj" />
+    <Project Path="tests/Gantri.Mcp.Tests/Gantri.Mcp.Tests.csproj" />
+  </Folder>
+</Solution>

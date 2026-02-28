@@ -1,0 +1,28 @@
+workflows:
+  content-review:
+    name: content-review
+    description: Multi-agent content review pipeline with approval gate
+    trigger: manual
+    steps:
+      - id: draft
+        type: agent
+        agent: content-writer
+        input: "${input.topic}"
+      - id: review
+        type: parallel
+        steps:
+          - id: grammar-check
+            type: agent
+            agent: editor
+            input: "${steps.draft.output}"
+          - id: fact-check
+            type: agent
+            agent: fact-checker
+            input: "${steps.draft.output}"
+      - id: final-edit
+        type: agent
+        agent: editor
+        input: "Incorporate these review notes into the draft:\n\nGrammar review: ${steps.grammar-check.output}\n\nFact check: ${steps.fact-check.output}\n\nOriginal draft: ${steps.draft.output}"
+      - id: approval
+        type: approval
+        input: "Review the final edited content for publication"
