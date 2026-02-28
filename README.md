@@ -4,6 +4,9 @@
 
 <h1 align="center">Gantri</h1>
 
+> [!WARNING]
+> **This project is a prototype under heavy development.** Not all features are fully implemented or tested. Use at your own risk.
+
 A modular, extensible C# agent framework for building AI-powered applications with plugin support, tool integration, and observable execution pipelines.
 
 Built on .NET 10, Microsoft Agent Framework, Microsoft.Extensions.AI, Azure OpenAI, Spectre.Console, and OpenTelemetry.
