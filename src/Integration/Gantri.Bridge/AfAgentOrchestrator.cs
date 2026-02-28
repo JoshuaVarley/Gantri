@@ -2,13 +2,16 @@ using Gantri.Abstractions.Agents;
 using Gantri.Abstractions.Configuration;
 using Gantri.Abstractions.Hooks;
 using Gantri.Telemetry;
+using Microsoft.Agents.AI;
 using Microsoft.Extensions.Logging;
 
 namespace Gantri.Bridge;
 
 /// <summary>
 /// Implements <see cref="IAgentOrchestrator"/> using <see cref="GantriAgentFactory"/>.
-/// Drop-in replacement for the old AgentOrchestrator.
+/// Used by CLI and Worker hosts for string-based agent interaction and group chat orchestration.
+/// For protocol-aware hosts (AG-UI, A2A), use <see cref="IAgentProvider"/> to get raw
+/// <see cref="AIAgent"/> instances instead.
 /// </summary>
 public sealed class AfAgentOrchestrator : IAgentOrchestrator
 {
@@ -70,10 +73,55 @@ public sealed class AfAgentOrchestrator : IAgentOrchestrator
         int maxIterations = 5,
         CancellationToken cancellationToken = default)
     {
-        var orchestrator = new GroupChatOrchestrator(
-            _agentFactory, _hookPipeline, _registry,
-            _loggerFactory.CreateLogger<GroupChatOrchestrator>());
+        using var activity = GantriActivitySources.Agents.StartActivity("gantri.bridge.group_chat");
 
-        return await orchestrator.RunAsync(participants, input, maxIterations, cancellationToken);
+        // Fire group-chat start hook
+        var startEvent = new HookEvent("orchestration", "group-chat", "start", HookTiming.Before);
+        var startCtx = new HookContext(startEvent, cancellationToken);
+        startCtx.Set("participants", participants);
+        startCtx.Set("input", input);
+        await _hookPipeline.ExecuteAsync(startEvent, _ => ValueTask.CompletedTask,
+            startCtx, cancellationToken);
+
+        _logger.LogInformation("Starting group chat with {Count} participants: {Participants}",
+            participants.Count, string.Join(", ", participants));
+
+        // Build AF agents for all participants
+        var agents = new List<(string Name, AIAgent Agent)>();
+        foreach (var participantName in participants)
+        {
+            var definition = _registry.TryGet(participantName)
+                ?? throw new InvalidOperationException(
+                    $"Agent '{participantName}' not found. Available: {string.Join(", ", _registry.Names)}");
+
+            var afAgent = await _agentFactory.CreateAgentAsync(definition, cancellationToken);
+            agents.Add((participantName, afAgent));
+        }
+
+        // Run sequential pipeline: each agent's output feeds the next agent's input
+        var currentMessage = input;
+        foreach (var (name, agent) in agents)
+        {
+            _logger.LogInformation("Running agent '{Agent}' in group chat", name);
+
+            var session = await agent.CreateSessionAsync(cancellationToken: cancellationToken);
+            var response = await agent.RunAsync(currentMessage, session, cancellationToken: cancellationToken);
+            var responseText = response.Text ?? string.Empty;
+
+            _logger.LogInformation("Agent '{Agent}' responded ({Length} chars)", name, responseText.Length);
+
+            currentMessage = responseText;
+            GantriMeters.AiCompletionsTotal.Add(1);
+        }
+
+        // Fire group-chat end hook
+        var endEvent = new HookEvent("orchestration", "group-chat", "end", HookTiming.After);
+        var endCtx = new HookContext(endEvent, cancellationToken);
+        endCtx.Set("output", currentMessage);
+        await _hookPipeline.ExecuteAsync(endEvent, _ => ValueTask.CompletedTask,
+            endCtx, cancellationToken);
+
+        _logger.LogInformation("Group chat completed ({Length} chars output)", currentMessage.Length);
+        return currentMessage;
     }
 }

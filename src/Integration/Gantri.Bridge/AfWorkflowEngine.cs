@@ -7,9 +7,9 @@ namespace Gantri.Bridge;
 
 /// <summary>
 /// Implements <see cref="IWorkflowEngine"/> with AF routing.
-/// Simple sequential agent workflows route to AF <see cref="AIAgent"/> sequential execution.
-/// Complex workflows (parallel, approval, condition, plugin steps) delegate to the existing
-/// <see cref="ILegacyWorkflowEngine"/> implementation as legacy fallback.
+/// Workflows whose steps are all agent-type execute via AF <see cref="AIAgent"/> sequential
+/// pipeline. Workflows containing non-agent steps (parallel, approval, condition, plugin)
+/// fall back to the <see cref="ILegacyWorkflowEngine"/>.
 /// </summary>
 public sealed class AfWorkflowEngine : IWorkflowEngine
 {
@@ -46,8 +46,7 @@ public sealed class AfWorkflowEngine : IWorkflowEngine
                 $"Workflow '{workflowName}' not found. Available: {string.Join(", ", _workflowRegistry.Names)}"
             );
 
-        // Route simple sequential agent-only workflows through AF
-        if (IsSimpleSequentialAgentWorkflow(definition))
+        if (CanExecuteViaAf(definition))
         {
             _logger.LogInformation(
                 "Routing workflow '{Workflow}' through AF sequential pipeline",
@@ -56,7 +55,6 @@ public sealed class AfWorkflowEngine : IWorkflowEngine
             return await ExecuteViaAfAsync(definition, input, cancellationToken);
         }
 
-        // Complex workflows delegate to legacy engine
         _logger.LogInformation("Routing workflow '{Workflow}' through legacy engine", workflowName);
         return await _legacyEngine.ExecuteAsync(workflowName, input, cancellationToken);
     }
@@ -81,10 +79,8 @@ public sealed class AfWorkflowEngine : IWorkflowEngine
         CancellationToken cancellationToken = default
     ) => _legacyEngine.GetRunStatusAsync(executionId, cancellationToken);
 
-    private static bool IsSimpleSequentialAgentWorkflow(WorkflowDefinition definition)
+    private static bool CanExecuteViaAf(WorkflowDefinition definition)
     {
-        // A workflow is "simple sequential agent" if ALL steps are agent type
-        // with no parallel, approval, condition, or plugin steps
         return definition.Steps.Count > 0
             && definition.Steps.All(s =>
                 s.Type.Equals("agent", StringComparison.OrdinalIgnoreCase) && s.Steps.Count == 0

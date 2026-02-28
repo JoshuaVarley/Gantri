@@ -2,13 +2,100 @@
 
 This document covers the technical architecture, internals, and reference documentation for Gantri. For a project overview and getting started guide, see the [README](README.md).
 
+```mermaid
+graph TB
+    subgraph "Layer 4 — Hosts"
+        CLI["Gantri.Cli<br/><i>Interactive REPL + CLI commands</i>"]
+        WEB["Gantri.Web<br/><i>AG-UI + A2A endpoints</i>"]
+        WRK["Gantri.Worker<br/><i>Background scheduler</i>"]
+    end
+
+    subgraph "Layer 3 — Domain"
+        AGT["Gantri.Agents<br/><i>ToolExecutor</i>"]
+        WFL["Gantri.Workflows<br/><i>WorkflowEngine, StepExecutor</i>"]
+        SCH["Gantri.Scheduling<br/><i>JobScheduler, JobRunner</i>"]
+    end
+
+    subgraph "Layer 2 — Integration"
+        BRG["Gantri.Bridge"]
+    end
+
+    subgraph "Bridge Internals"
+        FAC["GantriAgentFactory"]
+        PRV["GantriAgentProvider<br/><i>IAgentProvider</i>"]
+        SES["AfAgentSession<br/><i>IAgentSession</i>"]
+        ORC["AfAgentOrchestrator<br/><i>IAgentOrchestrator</i>"]
+        WFE["AfWorkflowEngine<br/><i>IWorkflowEngine</i>"]
+        PAF["PluginActionFunction"]
+        MTF["McpToolFunction"]
+        HMW["HookMiddleware"]
+        RTC["RetryingChatClient"]
+    end
+
+    subgraph "Layer 1 — Core"
+        HK["Hooks"]
+        PL["Plugins"]
+        AI["AI"]
+        MC["MCP"]
+        CF["Configuration"]
+        TL["Telemetry"]
+    end
+
+    subgraph "Layer 0 — Contracts"
+        ABS["Gantri.Abstractions"]
+    end
+
+    subgraph "External"
+        AF["Microsoft Agent Framework<br/><i>AIAgent, AgentSession</i>"]
+        AGUI["AG-UI Protocol<br/><i>SSE streaming</i>"]
+        A2A["A2A Protocol<br/><i>AgentCards</i>"]
+        LLM["Azure OpenAI"]
+        MCS["MCP Servers"]
+    end
+
+    CLI -->|"IAgentSession<br/>IAgentOrchestrator"| BRG
+    WEB -->|"IAgentProvider<br/>(raw AIAgent)"| BRG
+    WEB -->|"MapAGUI()"| AGUI
+    WEB -->|"MapA2A()"| A2A
+    WRK -->|"IAgentOrchestrator"| BRG
+
+    AGT --> BRG
+    WFL --> BRG
+    SCH --> WFL
+
+    BRG --> HK
+    BRG --> PL
+    BRG --> AI
+    BRG --> MC
+
+    FAC --> PRV
+    FAC --> SES
+    FAC --> ORC
+    FAC --> WFE
+    FAC --> PAF
+    FAC --> MTF
+    FAC --> HMW
+    FAC --> RTC
+
+    HK --> ABS
+    PL --> ABS
+    AI --> ABS
+    MC --> ABS
+    CF --> ABS
+    TL --> ABS
+
+    FAC -->|".AsAIAgent()"| AF
+    HMW -->|"IChatClient"| LLM
+    MTF --> MCS
+```
+
 ## Layered Architecture
 
 Gantri follows a strict layered architecture with top-down dependencies only. The **Integration** layer sits between Domain and Hosts, providing the bridge between Gantri's systems and the Microsoft Agent Framework.
 
 ```
-Layer 4 ─ Hosts          Gantri.Cli    Gantri.Worker
-                              │              │
+Layer 4 ─ Hosts          Gantri.Cli    Gantri.Web    Gantri.Worker
+                              │              │              │
 Layer 3 ─ Domain         Gantri.Agents  Gantri.Workflows  Gantri.Scheduling
                               │              │
 Layer 2 ─ Integration    Gantri.Bridge
@@ -32,11 +119,12 @@ Layer 0 ─ Contracts      Gantri.Abstractions
 | `Gantri.Mcp` | 1 | `McpClientManager` for connecting to MCP servers. `McpPermissionManager` for per-agent access control. |
 | `Gantri.Configuration` | 1 | YAML loader with `${ENV_VAR}` substitution and import resolution. |
 | `Gantri.Plugins.Wasm` | 1 | WASM plugin loader via Wasmtime. Sandboxed execution of `.wasm` modules with shared-memory JSON protocol. |
-| **`Gantri.Bridge`** | **2** | **Adapts Gantri's plugin/hook/MCP systems to Microsoft Agent Framework.** Contains `GantriAgentFactory`, `AfAgentSession`, `AfAgentOrchestrator`, `AfWorkflowEngine`, `GroupChatOrchestrator`, `PluginActionFunction`, `McpToolFunction`, and `HookMiddleware`. |
+| **`Gantri.Bridge`** | **2** | **Adapts Gantri's plugin/hook/MCP systems to Microsoft Agent Framework.** Contains `GantriAgentFactory`, `AfAgentSession`, `AfAgentOrchestrator`, `AfWorkflowEngine`, `PluginActionFunction`, `McpToolFunction`, `HookMiddleware`, `IAgentProvider`, and `GantriAgentProvider`. |
 | `Gantri.Agents` | 3 | `ToolExecutor` (unified tool routing). Delegates agent orchestration to `Gantri.Bridge`. |
 | `Gantri.Workflows` | 3 | `WorkflowEngine` executes multi-step workflows. `StepExecutor` routes to agent, plugin, condition, approval, and parallel handlers. `WorkflowContext` resolves `${input.*}`, `${steps.*}`, `${env.*}` templates. |
 | `Gantri.Scheduling` | 3 | `JobScheduler` backed by TickerQ cron/time tickers. `JobRunner` supports direct workflow/agent/plugin execution paths. |
 | `Gantri.Cli` | 4 | Spectre.Console CLI host with all user-facing commands and interactive console REPL. Dual-mode entry: no args launches the interactive console with slash commands, streaming, and human-in-the-loop approval; with args runs traditional CLI subcommands. |
+| `Gantri.Web` | 4 | ASP.NET Core web host exposing agents via AG-UI (SSE streaming) and A2A (agent discovery/communication) protocols. |
 | `Gantri.Worker` | 4 | Background worker host that runs TickerQ processing plus Gantri scheduling orchestration for unattended execution. |
 
 ## The Bridge Layer
@@ -50,12 +138,57 @@ Layer 0 ─ Contracts      Gantri.Abstractions
 | `McpToolFunction` | Real `AIFunction` that wraps `IMcpToolProvider.InvokeToolAsync` for MCP server tools. Supports optional `IToolApprovalHandler` for human-in-the-loop approval. |
 | `HookMiddleware` | `IChatClient` middleware (`.Use()` pattern) that fires `agent:{name}:model-call:before/after` hooks around every model call, including streaming calls. |
 | `AfAgentSession` | Implements `IAgentSession` by delegating to AF's `AIAgent.RunAsync` (and `RunStreamingAsync` for streaming) and `AgentSession`. |
-| `AfAgentOrchestrator` | Implements `IAgentOrchestrator` using `GantriAgentFactory`. Drop-in replacement for the old orchestrator. |
+| `AfAgentOrchestrator` | Implements `IAgentOrchestrator` using `GantriAgentFactory`. Drop-in replacement for the old orchestrator. Group chat logic is inlined in `RunGroupChatAsync`. |
 | `AfWorkflowEngine` | Implements `IWorkflowEngine` with dual routing: simple sequential agent workflows execute via AF agents, complex workflows delegate to the legacy engine (`ILegacyWorkflowEngine`). |
-| `GroupChatOrchestrator` | Runs multiple AF agents sequentially in a group chat, passing each output as the next agent's input. Fires `orchestration:group-chat:start/end` hooks. |
+| `IAgentProvider` | Interface providing `GetAgentAsync(name)` and `AgentNames` for hosts that need raw AF `AIAgent` instances instead of the string-based `IAgentSession`. |
+| `GantriAgentProvider` | Implements `IAgentProvider` — exposes raw `AIAgent` instances for protocol-aware hosts (AG-UI, A2A). Wraps `GantriAgentFactory` + `IAgentDefinitionRegistry`. |
 | `InvokeGantriPluginAction` | Custom action type for AF declarative workflows that calls through to `IPluginRouter`. |
 
+## Agent Access Patterns
+
+The Bridge layer exposes two interfaces for different host needs:
+
+| Interface | Returns | Used By | Description |
+|-----------|---------|---------|-------------|
+| `IAgentSession` | `string` (text response) | CLI, Worker | String-in/string-out interaction. Simple text-based agent invocation via `SendMessageAsync`. |
+| `IAgentProvider` | `AIAgent` (raw AF agent) | Web | Exposes the full AF `AIAgent` for protocol-aware hosts. Preserves AF's complete response model (streaming, structured output, tool results). |
+
+- **`IAgentSession`** — Used by the CLI REPL and Worker host for simple text-based interaction. Created via `IAgentOrchestrator.CreateSessionAsync()`.
+- **`IAgentProvider`** — Used by the Web host to expose agents via AG-UI and A2A protocols. Returns raw `AIAgent` instances via `GetAgentAsync(name)`, allowing AF's hosting packages to handle the full protocol lifecycle.
+
+## AG-UI and A2A Hosting
+
+The `Gantri.Web` host is an ASP.NET Core application that exposes every configured agent via two protocols:
+
+- **AG-UI endpoints** (`/agents/{name}`) — SSE streaming for web frontends (CopilotKit, custom UIs). Mapped via `app.MapAGUI()`.
+- **A2A endpoints** (`/a2a/{name}`) — Agent-to-agent discovery via AgentCards and cross-framework communication. Mapped via `app.MapA2A()`.
+- **Health endpoint** (`/health`) — Returns a JSON health check with timestamp.
+
+Endpoint mapping from `Program.cs`:
+
+```csharp
+var agentProvider = app.Services.GetRequiredService<IAgentProvider>();
+
+foreach (var agentName in agentProvider.AgentNames)
+{
+    var agent = await agentProvider.GetAgentAsync(agentName);
+
+    // AG-UI: SSE streaming for web frontends (CopilotKit, custom UIs)
+    app.MapAGUI($"/agents/{agentName}", agent);
+
+    // A2A: agent-to-agent communication with discovery via AgentCards
+    app.MapA2A(agent, $"/a2a/{agentName}", agentCard: new AgentCard
+    {
+        Name = agentName,
+        Description = description,
+        Version = "1.0"
+    });
+}
+```
+
 ## Agent Execution Flow
+
+> **Note:** This flow describes the CLI/Worker path via `IAgentSession`. The Web host path uses `IAgentProvider.GetAgentAsync()` to obtain the `AIAgent` directly, then AF's hosting packages (`MapAGUI`, `MapA2A`) handle the AG-UI/A2A protocol lifecycle.
 
 When you run an agent, the following happens:
 
@@ -82,7 +215,7 @@ The CLI composition root (`Program.cs`) wires Azure OpenAI as follows:
 2. **Agent definitions** — `config.Agents` dictionary registered into DI
 3. **Model registry** — Each provider and its models registered in `ModelProviderRegistry`
 4. **Client factory** — A `Func<string, AiModelOptions, IChatClient>` creates `AzureOpenAIClient` instances using the provider's `endpoint` + `api_key`, then calls `.GetChatClient(deploymentName).AsIChatClient()` to bridge to `Microsoft.Extensions.AI`
-5. **Bridge registration** — `AddGantriBridge()` registers `GantriAgentFactory`, `AfAgentOrchestrator` (as `IAgentOrchestrator`), and all bridge adapters
+5. **Bridge registration** — `AddGantriBridge()` registers `GantriAgentFactory`, `AfAgentOrchestrator` (as `IAgentOrchestrator`), `GantriAgentProvider` (as `IAgentProvider`), and all bridge adapters
 6. **Plugin discovery** — `PluginRouter.ScanPluginDirectories()` initializes plugin scanning from configured directories
 
 The core `Gantri.AI` project remains provider-agnostic — Azure-specific packages (`Azure.AI.OpenAI`) live only in the host projects.
@@ -334,7 +467,7 @@ Tests a 3-step workflow: agent -> approval -> agent. The workflow pauses at the 
 Three agents (content-writer, fact-checker, editor) collaborate sequentially in a group chat. Tests multi-agent orchestration with hook monitoring.
 
 **What it validates:**
-- `GroupChatOrchestrator` runs agents in the correct order
+- `AfAgentOrchestrator.RunGroupChatAsync` runs agents in the correct order
 - Each agent receives the previous agent's output as input
 - AF's `AIAgent` passes instructions via `ChatOptions.Instructions` (not system messages)
 - Hook events fire for all agent model calls
@@ -623,7 +756,7 @@ Unknown variables are preserved as-is, allowing safe forward references.
 
 ## Group Chat Orchestration
 
-The `GroupChatOrchestrator` enables multi-agent collaboration by running agents sequentially in a pipeline:
+`AfAgentOrchestrator.RunGroupChatAsync` enables multi-agent collaboration by running agents sequentially in a pipeline:
 
 ```
 Input -> Agent 1 -> Output 1 -> Agent 2 -> Output 2 -> Agent 3 -> Final Output
@@ -1034,4 +1167,23 @@ var groupResult = await orchestrator.RunGroupChatAsync(
     input: "Write about AI agents",
     maxIterations: 1);
 Console.WriteLine(groupResult);
+```
+
+### Web Host / IAgentProvider Usage
+
+For protocol-aware hosting (AG-UI, A2A), use `IAgentProvider` to get raw `AIAgent` instances:
+
+```csharp
+// Get raw AIAgent for protocol hosting
+var agentProvider = provider.GetRequiredService<IAgentProvider>();
+var agent = await agentProvider.GetAgentAsync("my-agent");
+
+// Use with AG-UI or A2A in an ASP.NET Core app
+app.MapAGUI("/agents/my-agent", agent);
+app.MapA2A(agent, "/a2a/my-agent", agentCard: new AgentCard
+{
+    Name = "my-agent",
+    Description = "A helpful assistant",
+    Version = "1.0"
+});
 ```

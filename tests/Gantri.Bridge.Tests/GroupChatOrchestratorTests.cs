@@ -30,7 +30,7 @@ public class GroupChatOrchestratorTests
     }
 
     [Fact]
-    public async Task RunAsync_ThrowsForUnknownParticipant()
+    public async Task RunGroupChatAsync_ThrowsForUnknownParticipant()
     {
         var registry = new ModelProviderRegistry();
         var definitions = new Dictionary<string, AgentDefinition>();
@@ -42,11 +42,11 @@ public class GroupChatOrchestratorTests
             NullLoggerFactory.Instance,
             Options.Create(new WorkingDirectoryOptions()));
 
-        var orchestrator = new GroupChatOrchestrator(
+        var orchestrator = new AfAgentOrchestrator(
             factory, CreatePassthroughPipeline(), new AgentDefinitionRegistry(definitions),
-            NullLogger<GroupChatOrchestrator>.Instance);
+            NullLoggerFactory.Instance);
 
-        var act = () => orchestrator.RunAsync(
+        var act = () => orchestrator.RunGroupChatAsync(
             ["nonexistent-agent"], "hello", cancellationToken: CancellationToken.None);
 
         await act.Should().ThrowAsync<InvalidOperationException>()

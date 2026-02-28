@@ -18,8 +18,9 @@ Built on .NET 10, Microsoft Agent Framework, Microsoft.Extensions.AI, Azure Open
 
 ## Features
 
-- **Agent Framework integration** — Agents run on the Microsoft Agent Framework (`AIAgent`, `AgentSession`), with a bridge layer that adapts Gantri's plugin/hook/MCP systems to AF's APIs.
-- **Multi-agent orchestration** — Group chat orchestration runs multiple agents sequentially, passing each agent's output as the next agent's input. Supports configurable iteration counts.
+- **Agent Framework integration** — Agents run on the Microsoft Agent Framework (`AIAgent`, `AgentSession`), with a bridge layer that adapts Gantri's plugin/hook/MCP systems to AF's APIs. `IAgentProvider` exposes raw `AIAgent` instances for protocol-aware hosts (AG-UI, A2A).
+- **Multi-agent orchestration** — `AfAgentOrchestrator.RunGroupChatAsync` runs multiple agents sequentially, passing each agent's output as the next agent's input. Supports configurable iteration counts.
+- **AG-UI and A2A protocol hosting** — Web host exposes agents as AG-UI SSE endpoints for web frontends (CopilotKit, custom UIs) and A2A endpoints for agent-to-agent discovery and communication via AgentCards.
 - **Dual plugin system** — Native .NET plugins loaded via isolated `AssemblyLoadContext`, plus WASM sandboxed plugins via Wasmtime for language-agnostic extensions.
 - **Workflow engine** — Define multi-step workflows in YAML with agent, plugin, condition, approval, and parallel step types. Simple sequential agent workflows route through AF; complex workflows use the legacy engine.
 - **Job scheduling** — Cron-based scheduling built on TickerQ that triggers workflows, agents, or plugins on a schedule, with a dedicated Worker host for background execution.
@@ -87,6 +88,7 @@ Built on .NET 10, Microsoft Agent Framework, Microsoft.Extensions.AI, Azure Open
 - Run tests: `dotnet test Gantri.slnx`
 - Launch interactive REPL: `dotnet run --project src/Hosts/Gantri.Cli`
 - Start background scheduler: `dotnet run --project src/Hosts/Gantri.Worker`
+- Start web host (AG-UI + A2A): `dotnet run --project src/Hosts/Gantri.Web`
 
 ## Pre-Built Agents
 
@@ -136,7 +138,7 @@ Gantri ships with 11 built-in plugins in `plugins/built-in/`:
 
 ## Architecture
 
-For detailed technical documentation including the layered architecture, bridge layer internals, CLI command reference, configuration reference, security model, workflow engine, plugin development guide, hook system, telemetry, and programmatic usage, see [Architecture.md](Architecture.md).
+For detailed technical documentation including the layered architecture diagram (with Mermaid visualization), bridge layer internals, AG-UI/A2A hosting, CLI command reference, configuration reference, security model, workflow engine, plugin development guide, hook system, telemetry, and programmatic usage, see [Architecture.md](Architecture.md).
 
 ## Project Status
 
@@ -162,6 +164,7 @@ Gantri is under active development. The following phases are complete:
 - [x] **Phase 17** — Microsoft Agent Framework integration (Bridge layer, AF agents, group chat orchestration, dual-mode workflow engine)
 - [x] **Phase 18** — Interactive console with slash commands, streaming agent responses, human-in-the-loop tool approval, and inline workflow approval
 - [x] **Phase 19** — Agentic coding (coding plugins, agents, and workflows)
+- [x] **Phase 20** — AG-UI + A2A protocol hosting (Web host, IAgentProvider, MapAGUI/MapA2A endpoints)
 
 **Test coverage:** Comprehensive unit and integration test suites are included across core, domain, bridge, and host-facing paths.
 

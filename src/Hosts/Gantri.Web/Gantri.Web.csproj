@@ -1,0 +1,71 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>Gantri.Web</RootNamespace>
+    <!-- Wasmtime only ships native binaries for x64/arm64 — no x86 support -->
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
+    <UserSecretsId>b2c3d4e5-f6a7-8901-bcde-f12345678901</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Agents.AI.Hosting" Version="1.0.0-preview.260225.1" />
+    <PackageReference Include="Microsoft.Agents.AI.Hosting.AGUI.AspNetCore" Version="1.0.0-preview.260225.1" />
+    <PackageReference Include="Microsoft.Agents.AI.Hosting.A2A.AspNetCore" Version="1.0.0-preview.260225.1" />
+    <PackageReference Include="Azure.AI.OpenAI" Version="2.8.0-beta.1" />
+    <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="1.0.0-rc2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Gantri.Abstractions\Gantri.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Core\Gantri.AI\Gantri.AI.csproj" />
+    <ProjectReference Include="..\..\Core\Gantri.Configuration\Gantri.Configuration.csproj" />
+    <ProjectReference Include="..\..\Core\Gantri.Hooks\Gantri.Hooks.csproj" />
+    <ProjectReference Include="..\..\Core\Gantri.Mcp\Gantri.Mcp.csproj" />
+    <ProjectReference Include="..\..\Core\Gantri.Plugins\Gantri.Plugins.csproj" />
+    <ProjectReference Include="..\..\Core\Gantri.Plugins.Wasm\Gantri.Plugins.Wasm.csproj" />
+    <ProjectReference Include="..\..\Core\Gantri.Telemetry\Gantri.Telemetry.csproj" />
+    <ProjectReference Include="..\..\Domain\Gantri.Agents\Gantri.Agents.csproj" />
+    <ProjectReference Include="..\..\Domain\Gantri.Workflows\Gantri.Workflows.csproj" />
+    <ProjectReference Include="..\..\Domain\Gantri.Scheduling\Gantri.Scheduling.csproj" />
+    <ProjectReference Include="..\..\Integration\Gantri.Bridge\Gantri.Bridge.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\config\**\*" LinkBase="config" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\..\plugins\built-in\*\manifest.json" LinkBase="plugins\built-in" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Copy built-in plugin compiled assemblies -->
+  <PropertyGroup>
+    <_PluginsSource>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\..\..\plugins\built-in'))</_PluginsSource>
+  </PropertyGroup>
+
+  <Target Name="CopyBuiltInPlugins" AfterTargets="Build">
+    <PropertyGroup>
+      <_PluginsDest>$(OutputPath)plugins\built-in</_PluginsDest>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_BuildPluginDll Include="$(_PluginsSource)\*\bin\$(Configuration)\$(TargetFramework)\*.dll" />
+      <_BuildPluginDll Update="@(_BuildPluginDll)" PluginName="$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName('%(FullPath)'))))))))))" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_BuildPluginDll)" DestinationFiles="@(_BuildPluginDll->'$(_PluginsDest)\%(PluginName)\%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="CopyBuiltInPluginsOnPublish" AfterTargets="Publish">
+    <PropertyGroup>
+      <_PluginsPubDest>$(PublishDir)plugins\built-in</_PluginsPubDest>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_PubPluginDll Include="$(_PluginsSource)\*\bin\$(Configuration)\$(TargetFramework)\*.dll" />
+      <_PubPluginDll Update="@(_PubPluginDll)" PluginName="$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName('%(FullPath)'))))))))))" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_PubPluginDll)" DestinationFiles="@(_PubPluginDll->'$(_PluginsPubDest)\%(PluginName)\%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

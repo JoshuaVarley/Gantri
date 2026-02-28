@@ -47,8 +47,7 @@ public class AfWorkflowEngineRoutingTests
     [Fact]
     public async Task AgentOnlySteps_RouteThroughAf()
     {
-        // A workflow with only agent steps (no nested sub-steps) should route through AF,
-        // NOT through the legacy engine.
+        // All steps are agent-type with no sub-steps, so CanExecuteViaAf returns true.
         var definition = new WorkflowDefinition
         {
             Name = "agent-only",
@@ -90,7 +89,7 @@ public class AfWorkflowEngineRoutingTests
     [Fact]
     public async Task MixedSteps_RoutesThroughLegacy()
     {
-        // A workflow with agent + parallel steps should route through legacy
+        // Mixed agent + parallel steps means CanExecuteViaAf is false; routes to legacy.
         var definition = new WorkflowDefinition
         {
             Name = "mixed",

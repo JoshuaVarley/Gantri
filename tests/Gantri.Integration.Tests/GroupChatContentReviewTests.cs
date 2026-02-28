@@ -127,11 +127,11 @@ public class GroupChatContentReviewTests
             }
         };
 
-        var orchestrator = new GroupChatOrchestrator(
+        var orchestrator = new AfAgentOrchestrator(
             factory, pipeline, new AgentDefinitionRegistry(definitions),
-            NullLogger<GroupChatOrchestrator>.Instance);
+            NullLoggerFactory.Instance);
 
-        var result = await orchestrator.RunAsync(
+        var result = await orchestrator.RunGroupChatAsync(
             ["content-writer", "fact-checker", "editor"],
             "Write about AI agents");
 
@@ -177,11 +177,11 @@ public class GroupChatContentReviewTests
             NullLoggerFactory.Instance,
             Options.Create(new WorkingDirectoryOptions()));
 
-        var orchestrator = new GroupChatOrchestrator(
+        var orchestrator = new AfAgentOrchestrator(
             factory, pipeline, new AgentDefinitionRegistry(),
-            NullLogger<GroupChatOrchestrator>.Instance);
+            NullLoggerFactory.Instance);
 
-        var act = () => orchestrator.RunAsync(
+        var act = () => orchestrator.RunGroupChatAsync(
             ["nonexistent"], "hello", cancellationToken: CancellationToken.None);
 
         await act.Should().ThrowAsync<InvalidOperationException>()

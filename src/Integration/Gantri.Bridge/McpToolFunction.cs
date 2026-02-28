@@ -5,6 +5,10 @@ using Microsoft.Extensions.AI;
 
 namespace Gantri.Bridge;
 
+// TODO: Microsoft.Extensions.AI now supports native local MCP tools via McpToolSource / IMcpClient.
+// This wrapper could be removed if Gantri migrates from its custom IMcpToolProvider / McpClientManager
+// to AF's built-in MCP client. That migration would also cover tool approval (via ApprovalRequiredAIFunction).
+
 /// <summary>
 /// A real <see cref="AIFunction"/> wrapping <see cref="IMcpToolProvider.InvokeToolAsync"/>.
 /// AF calls <see cref="InvokeCoreAsync"/> directly during tool execution.

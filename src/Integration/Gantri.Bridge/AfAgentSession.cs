@@ -8,7 +8,9 @@ namespace Gantri.Bridge;
 
 /// <summary>
 /// Implements <see cref="IAgentSession"/> by delegating to AF <see cref="AIAgent.RunAsync"/>.
-/// Preserves the existing interface for CLI and Worker consumers.
+/// Used by CLI and Worker hosts for string-in/string-out agent interaction.
+/// For protocol-aware hosts (AG-UI, A2A), use <see cref="IAgentProvider"/> to get raw
+/// <see cref="AIAgent"/> instances instead.
 /// </summary>
 public sealed class AfAgentSession : IAgentSession
 {

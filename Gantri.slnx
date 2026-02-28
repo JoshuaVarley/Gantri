@@ -60,6 +60,7 @@
   </Folder>
   <Folder Name="/src/Hosts/">
     <Project Path="src/Hosts/Gantri.Cli/Gantri.Cli.csproj" />
+    <Project Path="src/Hosts/Gantri.Web/Gantri.Web.csproj" />
     <Project Path="src/Hosts/Gantri.Worker/Gantri.Worker.csproj" />
   </Folder>
   <Folder Name="/tests/">
