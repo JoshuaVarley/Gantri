@@ -92,6 +92,7 @@ public class AfDailyNewsPipelineTests
             NullLogger<GantriAgentFactory>.Instance,
             NullLoggerFactory.Instance,
             Options.Create(new WorkingDirectoryOptions()),
+            Options.Create(new TelemetryOptions()),
             (_, _) => mockClient);
 
         var definition = new AgentDefinition
@@ -146,6 +147,7 @@ public class AfDailyNewsPipelineTests
             pipeline, NullLogger<GantriAgentFactory>.Instance,
             NullLoggerFactory.Instance,
             Options.Create(new WorkingDirectoryOptions()),
+            Options.Create(new TelemetryOptions()),
             (_, _) => mockClient);
 
         var definition = new AgentDefinition

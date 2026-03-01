@@ -4,6 +4,7 @@ telemetry:
   service_version: "1.0.0"
   traces:
     exporter: otlp          # otlp | console | none
+    enable_sensitive_data: false  # Set true in dev to capture prompts/responses in Aspire
   metrics:
     exporter: otlp
   logs:

@@ -1,5 +1,7 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using Gantri.Abstractions.Agents;
+using Gantri.Telemetry;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -29,7 +31,19 @@ internal sealed class AgentRunCommand : AsyncCommand<AgentRunCommand.Settings>
     {
         try
         {
+            // Root span for the entire conversation — all child operations nest under this
+            using var conversationActivity = GantriActivitySources.Agents.StartActivity(
+                "gantri.agent.conversation");
+            var conversationId = Guid.NewGuid().ToString("N")[..12];
+            var sw = Stopwatch.StartNew();
+
+            conversationActivity?.SetTag(GantriSemanticConventions.AgentName, settings.AgentName);
+            conversationActivity?.SetTag(GantriSemanticConventions.AgentConversationId, conversationId);
+            conversationActivity?.SetTag(GantriSemanticConventions.GenAiConversationId, conversationId);
+            conversationActivity?.SetTag(GantriSemanticConventions.GenAiAgentName, settings.AgentName);
+
             await using var session = await _orchestrator.CreateSessionAsync(settings.AgentName);
+            conversationActivity?.SetTag(GantriSemanticConventions.AgentSessionId, session.SessionId);
 
             AnsiConsole.MarkupLine($"[green]Agent '[bold]{settings.AgentName}[/]' session started[/] (id: {session.SessionId})");
             AnsiConsole.WriteLine();
@@ -44,6 +58,9 @@ internal sealed class AgentRunCommand : AsyncCommand<AgentRunCommand.Settings>
 
                 AnsiConsole.MarkupLine("[blue]Assistant:[/]");
                 AnsiConsole.WriteLine(response);
+
+                GantriMeters.AgentConversationDuration.Record(sw.Elapsed.TotalMilliseconds,
+                    new KeyValuePair<string, object?>(GantriSemanticConventions.AgentName, settings.AgentName));
                 return 0;
             }
 
@@ -75,6 +92,8 @@ internal sealed class AgentRunCommand : AsyncCommand<AgentRunCommand.Settings>
                 AnsiConsole.WriteLine();
             }
 
+            GantriMeters.AgentConversationDuration.Record(sw.Elapsed.TotalMilliseconds,
+                new KeyValuePair<string, object?>(GantriSemanticConventions.AgentName, settings.AgentName));
             return 0;
         }
         catch (InvalidOperationException ex)

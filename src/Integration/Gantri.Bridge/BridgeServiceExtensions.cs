@@ -36,6 +36,7 @@ public static class BridgeServiceExtensions
             var logger = sp.GetRequiredService<ILogger<GantriAgentFactory>>();
             var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
             var workingDirectoryOptions = sp.GetRequiredService<IOptions<WorkingDirectoryOptions>>();
+            var telemetryOptions = sp.GetRequiredService<IOptions<TelemetryOptions>>();
             var clientFactory = sp.GetService<Func<string, AiModelOptions, IChatClient>>();
             var approvalHandler = sp.GetService<IToolApprovalHandler>();
             var mcpPermissionManager = sp.GetService<McpPermissionManager>();
@@ -49,6 +50,7 @@ public static class BridgeServiceExtensions
                 logger,
                 loggerFactory,
                 workingDirectoryOptions,
+                telemetryOptions,
                 clientFactory,
                 approvalHandler,
                 mcpPermissionManager,

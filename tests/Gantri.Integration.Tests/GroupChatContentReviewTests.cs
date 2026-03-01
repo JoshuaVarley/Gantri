@@ -120,6 +120,7 @@ public class GroupChatContentReviewTests
             NullLogger<GantriAgentFactory>.Instance,
             NullLoggerFactory.Instance,
             Options.Create(new WorkingDirectoryOptions()),
+            Options.Create(new TelemetryOptions()),
             (_, _) => mockClient);
 
         var definitions = new Dictionary<string, AgentDefinition>
@@ -196,7 +197,8 @@ public class GroupChatContentReviewTests
             registry, Substitute.For<IPluginRouter>(), Substitute.For<IMcpToolProvider>(),
             pipeline, NullLogger<GantriAgentFactory>.Instance,
             NullLoggerFactory.Instance,
-            Options.Create(new WorkingDirectoryOptions()));
+            Options.Create(new WorkingDirectoryOptions()),
+            Options.Create(new TelemetryOptions()));
 
         var orchestrator = new AfAgentOrchestrator(
             factory, pipeline, new AgentDefinitionRegistry(),

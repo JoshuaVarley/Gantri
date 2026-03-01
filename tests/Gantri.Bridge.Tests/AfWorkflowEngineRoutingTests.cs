@@ -32,7 +32,8 @@ public class AfWorkflowEngineRoutingTests
             Substitute.For<IHookPipeline>(),
             NullLogger<GantriAgentFactory>.Instance,
             NullLoggerFactory.Instance,
-            Options.Create(new WorkingDirectoryOptions())
+            Options.Create(new WorkingDirectoryOptions()),
+            Options.Create(new TelemetryOptions())
         );
 
         _sut = new AfWorkflowEngine(

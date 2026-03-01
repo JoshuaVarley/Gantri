@@ -40,7 +40,8 @@ public class GroupChatOrchestratorTests
             CreatePassthroughPipeline(),
             NullLogger<GantriAgentFactory>.Instance,
             NullLoggerFactory.Instance,
-            Options.Create(new WorkingDirectoryOptions()));
+            Options.Create(new WorkingDirectoryOptions()),
+            Options.Create(new TelemetryOptions()));
 
         var orchestrator = new AfAgentOrchestrator(
             factory, CreatePassthroughPipeline(), new AgentDefinitionRegistry(definitions),

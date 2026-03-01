@@ -7,6 +7,15 @@ public static class GantriSemanticConventions
     public const string AgentSessionId = "gantri.agent.session_id";
     public const string AgentProvider = "gantri.agent.provider";
     public const string AgentModel = "gantri.agent.model";
+    public const string AgentConversationId = "gantri.agent.conversation_id";
+    public const string AgentMessageIndex = "gantri.agent.message_index";
+
+    // GenAI semantic convention aliases (standard — set alongside Gantri attributes)
+    // https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-agent-spans/
+    public const string GenAiConversationId = "gen_ai.conversation.id";
+    public const string GenAiAgentName = "gen_ai.agent.name";
+    public const string GenAiAgentId = "gen_ai.agent.id";
+    public const string GenAiOperationName = "gen_ai.operation.name";
 
     // AI attributes
     public const string AiTokensInput = "gantri.ai.tokens.input";

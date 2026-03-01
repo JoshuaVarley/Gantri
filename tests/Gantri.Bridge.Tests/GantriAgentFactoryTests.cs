@@ -92,6 +92,7 @@ public class GantriAgentFactoryTests
             NullLogger<GantriAgentFactory>.Instance,
             NullLoggerFactory.Instance,
             Options.Create(new WorkingDirectoryOptions()),
+            Options.Create(new TelemetryOptions()),
             clientFactory
         );
 
@@ -142,6 +143,7 @@ public class GantriAgentFactoryTests
             NullLogger<GantriAgentFactory>.Instance,
             NullLoggerFactory.Instance,
             Options.Create(new WorkingDirectoryOptions()),
+            Options.Create(new TelemetryOptions()),
             clientFactory
         );
 
@@ -206,6 +208,7 @@ public class GantriAgentFactoryTests
             NullLogger<GantriAgentFactory>.Instance,
             NullLoggerFactory.Instance,
             Options.Create(new WorkingDirectoryOptions()),
+            Options.Create(new TelemetryOptions()),
             clientFactory,
             approvalHandler
         );
@@ -258,6 +261,7 @@ public class GantriAgentFactoryTests
             NullLogger<GantriAgentFactory>.Instance,
             NullLoggerFactory.Instance,
             Options.Create(new WorkingDirectoryOptions()),
+            Options.Create(new TelemetryOptions()),
             clientFactory,
             mcpPermissionManager: permissionManager
         );
@@ -306,6 +310,7 @@ public class GantriAgentFactoryTests
             NullLogger<GantriAgentFactory>.Instance,
             NullLoggerFactory.Instance,
             Options.Create(new WorkingDirectoryOptions()),
+            Options.Create(new TelemetryOptions()),
             clientFactory
         );
 
@@ -368,6 +373,7 @@ public class GantriAgentFactoryTests
             NullLogger<GantriAgentFactory>.Instance,
             NullLoggerFactory.Instance,
             Options.Create(new WorkingDirectoryOptions()),
+            Options.Create(new TelemetryOptions()),
             clientFactory
         );
 

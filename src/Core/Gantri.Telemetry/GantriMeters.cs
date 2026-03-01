@@ -13,6 +13,13 @@ public static class GantriMeters
     public static readonly Counter<long> AgentSessionsTotal =
         Meter.CreateCounter<long>("gantri.agent.sessions.total", "{sessions}", "Total sessions created");
 
+    // Conversation metrics
+    public static readonly Histogram<double> AgentConversationDuration =
+        Meter.CreateHistogram<double>("gantri.agent.conversation.duration", "ms", "End-to-end conversation duration");
+
+    public static readonly Counter<long> AgentMessagesTotal =
+        Meter.CreateCounter<long>("gantri.agent.messages.total", "{messages}", "Total messages sent across all conversations");
+
     // AI metrics
     public static readonly Counter<long> AiCompletionsTotal =
         Meter.CreateCounter<long>("gantri.ai.completions.total", "{completions}", "Total model completions");

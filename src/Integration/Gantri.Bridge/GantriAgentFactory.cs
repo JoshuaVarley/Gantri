@@ -32,6 +32,7 @@ public sealed class GantriAgentFactory
     private readonly ILoggerFactory _loggerFactory;
     private readonly string _defaultWorkingDirectory;
     private readonly IPluginServices? _pluginServices;
+    private readonly bool _enableSensitiveData;
 
     public GantriAgentFactory(
         ModelProviderRegistry modelProviderRegistry,
@@ -41,6 +42,7 @@ public sealed class GantriAgentFactory
         ILogger<GantriAgentFactory> logger,
         ILoggerFactory loggerFactory,
         IOptions<WorkingDirectoryOptions> workingDirectoryOptions,
+        IOptions<TelemetryOptions> telemetryOptions,
         Func<string, AiModelOptions, IChatClient>? clientFactory = null,
         IToolApprovalHandler? approvalHandler = null,
         McpPermissionManager? mcpPermissionManager = null,
@@ -58,6 +60,7 @@ public sealed class GantriAgentFactory
         _clientFactory = clientFactory;
         _defaultWorkingDirectory = workingDirectoryOptions.Value.DefaultDirectory;
         _pluginServices = pluginServices;
+        _enableSensitiveData = telemetryOptions.Value.Traces.EnableSensitiveData;
     }
 
     /// <summary>
@@ -91,7 +94,8 @@ public sealed class GantriAgentFactory
                 inner,
                 _loggerFactory.CreateLogger<RetryingChatClient>()
             ))
-            .UseOpenTelemetry(loggerFactory: _loggerFactory, sourceName: "Gantri.Agents")
+            .UseOpenTelemetry(loggerFactory: _loggerFactory, sourceName: "Gantri.Agents",
+                configure: cfg => cfg.EnableSensitiveData = _enableSensitiveData)
             .UseLogging(_loggerFactory)
             .Build();
 
@@ -115,7 +119,10 @@ public sealed class GantriAgentFactory
             tools: tools
         );
 
-        return agent.AsBuilder().UseOpenTelemetry(sourceName: "Gantri.Agents").Build();
+        return agent.AsBuilder()
+            .UseOpenTelemetry(sourceName: "Gantri.Agents",
+                configure: cfg => cfg.EnableSensitiveData = _enableSensitiveData)
+            .Build();
     }
 
     private IChatClient CreateChatClient(AgentDefinition definition)

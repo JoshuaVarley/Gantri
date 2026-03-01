@@ -1,6 +1,7 @@
 using Gantri.Abstractions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
@@ -21,6 +22,10 @@ public static class TelemetryServiceExtensions
         this IServiceCollection services, TelemetryOptions? options = null)
     {
         options ??= new TelemetryOptions();
+
+        // Register TelemetryOptions so IOptions<TelemetryOptions> is available for DI consumers
+        // (e.g. GantriAgentFactory reads EnableSensitiveData for .UseOpenTelemetry() config)
+        services.AddSingleton<IOptions<TelemetryOptions>>(Options.Create(options));
 
         if (!options.Enabled)
             return services;
@@ -45,9 +50,11 @@ public static class TelemetryServiceExtensions
                     tracing.AddSource(sourceName);
 
                 // Microsoft.Extensions.AI chat client telemetry (chat spans, token usage)
-                tracing.AddSource("Microsoft.Extensions.AI");
+                // Wildcard prefix per Microsoft Agent Framework observability docs —
+                // actual source names may be prefixed (e.g. Experimental.Microsoft.Extensions.AI)
+                tracing.AddSource("*Microsoft.Extensions.AI");
                 // Microsoft Agent Framework telemetry (invoke_agent, execute_tool spans)
-                tracing.AddSource("Microsoft.Agents.AI");
+                tracing.AddSource("*Microsoft.Extensions.Agents*");
 
                 ConfigureTraceExporter(tracing, options.Traces);
             })
@@ -56,7 +63,9 @@ public static class TelemetryServiceExtensions
                 metrics.AddMeter(GantriMeters.MeterName);
 
                 // Microsoft Agent Framework metrics (operation duration, token usage histograms)
-                metrics.AddMeter("Microsoft.Agents.AI");
+                metrics.AddMeter("*Microsoft.Agents.AI");
+                // Agent Framework function invocation metrics
+                metrics.AddMeter("*agent_framework*");
 
                 ConfigureMetricExporter(metrics, options.Metrics);
             })

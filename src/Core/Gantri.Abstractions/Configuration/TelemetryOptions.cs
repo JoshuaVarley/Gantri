@@ -16,6 +16,7 @@ public sealed class TraceOptions
     public string Exporter { get; set; } = "otlp";
     public string? Endpoint { get; set; }
     public SamplingOptions Sampling { get; set; } = new();
+    public bool EnableSensitiveData { get; set; } = false;
 }
 
 public sealed class SamplingOptions

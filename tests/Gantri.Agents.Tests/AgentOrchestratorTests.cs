@@ -54,6 +54,7 @@ public class AgentOrchestratorTests
             NullLogger<GantriAgentFactory>.Instance,
             NullLoggerFactory.Instance,
             Options.Create(new WorkingDirectoryOptions()),
+            Options.Create(new TelemetryOptions()),
             clientFactory);
     }
 

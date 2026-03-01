@@ -7,6 +7,14 @@ public sealed class NativePluginContext : AssemblyLoadContext
 {
     private readonly AssemblyDependencyResolver _resolver;
 
+    // Assemblies that define the host-plugin contract must load from the host context
+    // to preserve type identity across AssemblyLoadContext boundaries.
+    private static readonly HashSet<string> SharedAssemblies = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Gantri.Abstractions",
+        "Gantri.Plugins.Sdk"
+    };
+
     public NativePluginContext(string pluginPath) : base(isCollectible: true)
     {
         _resolver = new AssemblyDependencyResolver(pluginPath);
@@ -14,6 +22,9 @@ public sealed class NativePluginContext : AssemblyLoadContext
 
     protected override Assembly? Load(AssemblyName assemblyName)
     {
+        if (assemblyName.Name is not null && SharedAssemblies.Contains(assemblyName.Name))
+            return null;
+
         var assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
         return assemblyPath is not null ? LoadFromAssemblyPath(assemblyPath) : null;
     }

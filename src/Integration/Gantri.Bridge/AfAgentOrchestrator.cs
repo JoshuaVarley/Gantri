@@ -88,6 +88,9 @@ public sealed class AfAgentOrchestrator : IAgentOrchestrator
         _logger.LogInformation("Starting group chat with {Count} participants: {Participants}",
             participants.Count, string.Join(", ", participants));
 
+        activity?.SetTag("gantri.group_chat.participants", string.Join(",", participants));
+        activity?.SetTag("gantri.group_chat.max_iterations", maxIterations);
+
         // Build AF agents for all participants
         var afAgents = new List<AIAgent>();
         foreach (var participantName in participants)
@@ -95,6 +98,10 @@ public sealed class AfAgentOrchestrator : IAgentOrchestrator
             var definition = _registry.TryGet(participantName)
                 ?? throw new InvalidOperationException(
                     $"Agent '{participantName}' not found. Available: {string.Join(", ", _registry.Names)}");
+
+            using var agentActivity = GantriActivitySources.Agents.StartActivity(
+                "gantri.group_chat.agent_turn");
+            agentActivity?.SetTag(GantriSemanticConventions.AgentName, participantName);
 
             afAgents.Add(await _agentFactory.CreateAgentAsync(definition, cancellationToken));
         }
